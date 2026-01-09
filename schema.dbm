@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+ Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="1.2.0-beta" use-changelog="false" max-obj-count="14"
+	 last-position="-100,-22" last-zoom="1" scene-rect="-100,-21.8,1670.8,1229.92"
+	 default-schema="public" default-owner="postgres"
+	 layers="Default layer"
+	 active-layers="0"
+	 layer-name-colors="#000000"
+	 layer-rect-colors="#b4b4b4"
+	 show-layer-names="false" show-layer-rects="false">
+<tablespace name="forum" directory="'forum'">
+	<role name="postgres"/>
+</tablespace>
+
+<database name="new_database" encoding="UTF8" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" layers="0" fill-color="#e1e1e1" name-color="#000000" sql-disabled="true">
+</schema>
+
+<schema name="forum" layers="0" rect-visible="true" fill-color="#e1e1e1" name-color="#31363b">
+	<role name="postgres"/>
+</schema>
+
+<usertype name="user_role" configuration="enumeration">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<enumeration label="user"/>
+	<enumeration label="mod"/>
+	<enumeration label="admin"/>
+</usertype>
+
+<usertype name="user_status" configuration="enumeration">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<enumeration label="active"/>
+	<enumeration label="inactive"/>
+	<enumeration label="banned"/>
+</usertype>
+
+<sequence name="section_id_seq" cycle="false" start="1" increment="1" min-value="0" max-value="2147483647" cache="1">
+	<schema name="forum"/>
+	<role name="postgres"/>
+</sequence>
+
+<sequence name="topic_id" cycle="false" start="1" increment="1" min-value="0" max-value="2147483647" cache="1">
+	<schema name="forum"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="sections" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="600" y="20"/>
+	<column name="id" not-null="true" sequence="forum.section_id_seq">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="description">
+		<type name="varchar" length="255"/>
+	</column>
+	<constraint name="id_pkc" type="pk-constr" table="forum.sections">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="threads" layers="0" collapse-mode="2" max-obj-count="9" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="640" y="240"/>
+	<column name="id" not-null="true" sequence="forum.topic_id">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="title" not-null="true">
+		<type name="varchar" length="255"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="NOW()">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="content" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="author" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="section_id" not-null="true">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="locked" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="sticky" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<constraint name="id_pk" type="pk-constr" table="forum.threads">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="seq_s" cycle="false" start="1" increment="1" min-value="0" max-value="2147483647" cache="1">
+	<schema name="forum"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="users" layers="0" collapse-mode="2" max-obj-count="19" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="240" y="20"/>
+	<column name="id" not-null="true" default-value="uuid_generate_v4()">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="email" not-null="true">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="verified" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="password" not-null="true">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="verification_token">
+		<type name="varchar" length="255"/>
+	</column>
+	<column name="token_expires_at">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="role" not-null="true" default-value="‘user’">
+		<type name="forum.user_role" length="0"/>
+	</column>
+	<column name="created_at" default-value="NOW()">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="updated_at" default-value="NOW()">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="description">
+		<type name="varchar" length="255"/>
+	</column>
+	<column name="avatar" default-value="'default.png'">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="facebook">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="x_id">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="banned_until">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="last_online">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<constraint name="users_pk" type="pk-constr" table="forum.users">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="ban_until_check" type="ck-constr" table="forum.users">
+			<expression> <![CDATA[banned_until > NOW()]]> </expression>
+	</constraint>
+	<constraint name="name_unique" type="uq-constr" table="forum.users">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="one_user_per_email" type="uq-constr" table="forum.users">
+		<columns names="email" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="posts" layers="0" collapse-mode="2" max-obj-count="9" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="1060" y="200"/>
+	<column name="id" not-null="true" sequence="forum.section_id_seq">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="content" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="author">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="topic" not-null="true">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="comments">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="NOW()">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="modified_at">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="likes" not-null="true" default-value="0">
+		<type name="int4" length="0"/>
+	</column>
+	<constraint name="post_pk" type="pk-constr" table="forum.posts">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="allowed_id" cycle="false" start="1" increment="1" min-value="0" max-value="2147483647" cache="1">
+	<schema name="forum"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="sections_allowed" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="960" y="20"/>
+	<column name="id" not-null="true" sequence="forum.allowed_id">
+		<type name="int4" length="0"/>
+	</column>
+	<column name="section_id" not-null="true">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="role" not-null="true">
+		<type name="forum.user_role" length="0"/>
+	</column>
+	<constraint name="allowed_pk" type="pk-constr" table="forum.sections_allowed">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="hash_seq" cycle="false" start="1" increment="1" min-value="0" max-value="2147483647" cache="1">
+	<schema name="forum"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="hashtags" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="640" y="640"/>
+	<column name="id" not-null="true" sequence="forum.hash_seq">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="tag" not-null="true">
+		<type name="varchar" length="25"/>
+	</column>
+	<column name="topic" not-null="true">
+		<type name="int8" length="0"/>
+	</column>
+	<constraint name="hashtag_pk" type="pk-constr" table="forum.hashtags">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="tag_unique" type="uq-constr" table="forum.hashtags">
+		<columns names="tag,topic" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="chat_post_ids" cycle="false" start="1" increment="1" min-value="0" max-value="2147483647" cache="1">
+	<schema name="forum"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="chat_posts" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="280" y="580"/>
+	<column name="id" not-null="true" sequence="forum.chat_post_ids">
+		<type name="int4" length="0"/>
+	</column>
+	<column name="added" not-null="true" default-value="NOW()">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="author" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="content" not-null="true">
+		<type name="varchar" length="255"/>
+	</column>
+	<constraint name="chat_pk" type="pk-constr" table="forum.chat_posts">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="user_warning" layers="0" collapse-mode="2" max-obj-count="7" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="-60" y="0"/>
+	<column name="id" not-null="true">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="user_id" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="warn_time" not-null="true" default-value="NOW()">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="comment">
+		<type name="varchar" length="255"/>
+	</column>
+	<column name="warned_by" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="banned" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<constraint name="warn_id_pk" type="pk-constr" table="forum.user_warning">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="user_no_self_warn" type="ck-constr" table="forum.user_warning">
+			<expression> <![CDATA[warned_by <> user_id]]> </expression>
+	</constraint>
+</table>
+
+<sequence name="pm_seq" cycle="false" start="1" increment="1" min-value="0" max-value="2147483647" cache="1">
+	<schema name="forum"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="private_messages" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<position x="-80" y="360"/>
+	<column name="id" not-null="true" sequence="forum.pm_seq">
+		<type name="int8" length="0"/>
+	</column>
+	<column name="author">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="receiver" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="content" not-null="true">
+		<type name="varchar" length="255"/>
+	</column>
+	<constraint name="pm_pk" type="pk-constr" table="forum.private_messages">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="pm_author_recv" type="ck-constr" table="forum.private_messages">
+			<expression> <![CDATA[author <> receiver]]> </expression>
+	</constraint>
+</table>
+
+<function name="delete_related_threads"
+		window-func="false"
+		returns-setof="false"
+		behavior-type="CALLED ON NULL INPUT"
+		function-type="VOLATILE"
+		security-type="SECURITY INVOKER"
+		parallel-type="PARALLEL UNSAFE"
+		execution-cost="1"
+		row-amount="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<language name="plpgsql"/>
+	<return-type>
+	<type name="trigger" length="0"/>
+	</return-type>
+	<definition> <![CDATA[CREATE OR REPLACE FUNCTION delete_related_threads()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Delete rows from the "thread" table where section_id matches the deleted row
+    DELETE FROM forum.threads
+    WHERE section_id = OLD.section_id;
+    -- Delete permissions for deleted section
+    DELETE FROM forum.sections_allowed
+    WHERE section = OLD.section_id;
+
+    -- Return the deleted row (required for BEFORE DELETE triggers)
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;]]> </definition>
+</function>
+
+<trigger name="tr_on_delete_section" firing-type="BEFORE" per-line="true" constraint="false"
+	 ins-event="false" del-event="true" upd-event="false" trunc-event="false"
+	 table="forum.sections">
+		<function signature="forum.delete_related_threads()"/>
+</trigger>
+
+<function name="delete_related_posts"
+		window-func="false"
+		returns-setof="false"
+		behavior-type="CALLED ON NULL INPUT"
+		function-type="VOLATILE"
+		security-type="SECURITY INVOKER"
+		parallel-type="PARALLEL UNSAFE"
+		execution-cost="1"
+		row-amount="0">
+	<schema name="forum"/>
+	<role name="postgres"/>
+	<language name="plpgsql"/>
+	<return-type>
+	<type name="trigger" length="0"/>
+	</return-type>
+	<definition> <![CDATA[CREATE OR REPLACE FUNCTION delete_related_posts()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Delete rows from the "thread" table where section_id matches the deleted row
+    DELETE FROM forum.posts
+    WHERE topic = OLD.topic;
+
+    -- Return the deleted row (required for BEFORE DELETE triggers)
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;]]> </definition>
+</function>
+
+<trigger name="tr_delete_threads_posts" firing-type="BEFORE" per-line="false" constraint="false"
+	 ins-event="false" del-event="true" upd-event="false" trunc-event="false"
+	 table="forum.threads">
+		<function signature="forum.delete_related_posts()"/>
+</trigger>
+
+<constraint name="topics_sections" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.sections" table="forum.threads">
+	<columns names="section_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="topics_users" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.users" table="forum.threads">
+	<columns names="author" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="post_author" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.users" table="forum.posts">
+	<columns names="author" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="post_topic" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.threads" table="forum.posts">
+	<columns names="topic" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="comments_post" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.posts" table="forum.posts">
+	<columns names="comments" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="allowed_in_sec" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.sections" table="forum.sections_allowed">
+	<columns names="section_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="tag_topic" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.threads" table="forum.hashtags">
+	<columns names="topic" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="author_uuid" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.users" table="forum.chat_posts">
+	<columns names="author" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="user_warned" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.users" table="forum.user_warning">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="warned_by_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.users" table="forum.user_warning">
+	<columns names="warned_by" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="pm_author" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.users" table="forum.private_messages">
+	<columns names="author" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="pm_recv" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="forum.users" table="forum.private_messages">
+	<columns names="receiver" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_topics_sections" type="relfk" layers="0"
+	 src-table="forum.threads"
+	 dst-table="forum.sections" reference-fk="topics_sections"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_topics_users" type="relfk" layers="0"
+	 src-table="forum.threads"
+	 dst-table="forum.users" reference-fk="topics_users"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_posts_users" type="relfk" layers="0"
+	 src-table="forum.posts"
+	 dst-table="forum.users" reference-fk="post_author"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_posts_topics" type="relfk" layers="0"
+	 src-table="forum.posts"
+	 dst-table="forum.threads" reference-fk="post_topic"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_posts_posts" type="relfk" layers="0"
+	 src-table="forum.posts"
+	 dst-table="forum.posts" reference-fk="comments_post"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="1352.46" y="307.041"/>
+	<position x="1352.46" y="167"/>
+	<position x="1232.97" y="167"/>
+	</line>
+</relationship>
+
+<relationship name="rel_sections_allowed_sections" type="relfk" layers="0"
+	 src-table="forum.sections_allowed"
+	 dst-table="forum.sections" reference-fk="allowed_in_sec"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_hashtags_topics" type="relfk" layers="0"
+	 src-table="forum.hashtags"
+	 dst-table="forum.threads" reference-fk="tag_topic"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_chat_posts_users" type="relfk" layers="0"
+	 src-table="forum.chat_posts"
+	 dst-table="forum.users" reference-fk="author_uuid"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_user_warning_users" type="relfk" layers="0"
+	 src-table="forum.user_warning"
+	 dst-table="forum.users" reference-fk="user_warned"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_user_warning_users1" type="relfk" layers="0"
+	 src-table="forum.user_warning"
+	 dst-table="forum.users" reference-fk="warned_by_fk"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_private_messages_users" type="relfk" layers="0"
+	 src-table="forum.private_messages"
+	 dst-table="forum.users" reference-fk="pm_author"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_private_messages_users1" type="relfk" layers="0"
+	 src-table="forum.private_messages"
+	 dst-table="forum.users" reference-fk="pm_recv"
+	 src-required="false" dst-required="true"/>
+
+</dbmodel>

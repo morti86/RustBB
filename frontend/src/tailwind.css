@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	a {
+		@apply text-cyan-500;
+	}
+	a:hover {
+		@apply text-cyan-200;
+	}
+	button {
+		@apply px-4 py-1 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors disabled:bg-zinc-900 hover:disabled:bg-zinc-900 disabled:text-zinc-600;
+	}
+}

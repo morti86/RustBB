@@ -1,0 +1,22 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ammonia = "4.1.2"
+chrono = { version = "0.4.42", features = ["serde"] }
+dotenv = "0.15.0"
+js-sys = "0.3.83"
+pulldown-cmark = { version = "0.13.0", features = ["serde"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
+serde_json = "1.0.147"
+thiserror = "2.0.17"
+url = "2.5.7"
+wasm-bindgen = { version = "0.2.106", features = ["serde", "serde_json", "serde-serialize"] }
+wasm-bindgen-futures = "0.4.56"
+web-sys = { version = "0.3.83", features = ["Request", "RequestInit", "RequestMode", "Response", "Window", "HtmlDocument", "File", "FileReader", "FileList", "HtmlButtonElement", "XmlHttpRequest"] }
+yew = { version = "0.22.0", features = ["serde","csr"] }
+yew-router = "0.19.0"
+infer = "0.19.0"

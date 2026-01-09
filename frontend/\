@@ -1,0 +1,108 @@
+use wasm_bindgen::{JsValue, JsCast};
+use web_sys::{HtmlElement, HtmlInputElement};
+use yew::prelude::*;
+use ammonia::clean;
+use pulldown_cmark::{Parser, Options, html::push_html};
+
+use crate::{dto::Resp, forum::add_post};
+
+#[derive(Clone, Properties, PartialEq)]
+pub struct Props {
+    pub id: i64,
+    pub token: Option<String>,
+    pub set_to_load: Callback<()>,
+}
+
+
+#[component]
+pub fn Editor(props: &Props) -> Html {
+    let raw = use_state(String::new);
+    let token = props.token.clone();
+    let logged_out = token.is_none();
+    let thread_id = props.id;
+    let error = use_state(String::new);
+    let image_data = use_state(Vec::<u8>::new);
+    
+    let s_c = props.set_to_load.clone();
+    let r_c = raw.clone();
+    let e_c = error.clone();
+    let on_submit = Callback::from(move |e: SubmitEvent| {
+        e.prevent_default();
+        e_c.set(String::new());
+        let token = token.clone();
+        let text = r_c.clone();
+        let md_parse = Parser::new_ext(text.as_str(), Options::empty());
+        let mut unsafe_html = String::new();
+        push_html(&mut unsafe_html, md_parse);
+        let safe_html = clean(&*unsafe_html);
+        let s_c = s_c.clone();
+        let e_c = e_c.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            match add_post(token, thread_id, &safe_html).await {
+                Ok(_) => {
+                    s_c.emit(());
+                    text.set(String::new());
+                }
+                Err(e) => {
+                    let err = Resp::from(e);
+                    e_c.set(err.message);
+                }
+            }
+        });
+    });
+
+    let on_text_input = {
+        let raw = raw.clone();
+        Callback::from(move |e: InputEvent| {
+            let input: web_sys::HtmlInputElement = e.target_unchecked_into();
+            let v = input.value();
+            raw.set(v);
+        })
+    };
+
+    let on_file_upload = {
+        let im_c = image_data.clone();
+        Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            im_c.set(vec![]);
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+    
+            // Create file input element
+            let file_input: HtmlInputElement = document
+                .create_element("input")
+                .expect("element fail")
+                .dyn_into::<HtmlInputElement>()
+                .expect("element convert fail");
+    
+            file_input.set_type("file");
+            file_input.set_multiple(false); // Allow multiple files
+            c_log!("FU");
+        })
+    };
+
+    html! {
+        <form id="new_post_form" onsubmit={on_submit}>
+            <span class="text-red-500">{(*error).clone()}</span>
+            <div class="grid grid-cols-6 space-y-5 space-x-2">
+                <textarea 
+                    id="new_post" 
+                    rows="10"
+                    required=true
+                    class="bg-black/0 colspan=10 p-5 border rounded-2xl border-zinc-800 col-span-6"
+                    disabled={logged_out}
+                    oninput={on_text_input}
+                    value={(*raw).clone()}
+                    />
+                <input 
+                    type="submit" 
+                    value="Submit" 
+                    class="px-4 py-2 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-5"
+                    disabled={logged_out}
+                    />
+                <button class="px-4 py-2 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors"
+                    onclick={on_file_upload}>{"+"}</button>
+            </div>
+        </form>
+    }
+}

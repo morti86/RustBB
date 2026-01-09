@@ -1,0 +1,11 @@
+email_verification = false
+
+jwt_secret = "dupa"
+jwt_maxage = 120
+
+ports_http = 8000
+ports_https = 8080
+
+https = false
+
+db_url = "postgresql://postgres:password@localhost:5432/forum"

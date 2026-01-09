@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# Cargo
+Cargo.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment files (except example)
+.env
+!.env.example
+
+# Uploads directory (should be mounted as volume)
+uploads/
+
+# Certificates (should be mounted as volume)
+cert.pem
+key.pem
+

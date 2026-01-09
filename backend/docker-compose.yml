@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/postgres
+      HOST_URL: 0.0.0.0
+      JWT_SECRET_KEY: change_this_in_production
+      JWT_MAXAGE: 60
+      PORT_HTTP: 8000
+      PORT_HTTPS: 8080
+      UPLOAD_DIR: ./uploads
+      MAX_FILE_SIZE: 5242880
+      VERIFY_EMAIL: false
+      ENABLE_HTTPS: false
+      # SMTP configuration (uncomment and set your values)
+      # SMTP_SERVER: smtp.your-email-provider.com
+      # SMTP_PORT: 587
+      # SMTP_USERNAME: your_email@example.com
+      # SMTP_PASSWORD: your_email_password
+      # SMTP_FROM_ADDRESS: no-reply@yourdomain.com
+      # OAuth configuration (uncomment and set your values)
+      # GOOGLE_CLIENT_ID: your_client_id
+      # GOOGLE_CLIENT_SECRET: your_client_secret
+      # GOOGLE_REDIRECT_URI: http://localhost:3000/auth/google/callback
+      # FACEBOOK_CLIENT_ID: your_facebook_client_id
+      # FACEBOOK_CLIENT_SECRET: your_facebook_client_secret
+      # FACEBOOK_REDIRECT_URI: http://localhost:3000/auth/facebook/callback
+    volumes:
+      - uploads:/app/uploads
+      - ./cert.pem:/app/cert.pem
+      - ./key.pem:/app/key.pem
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads:
+
