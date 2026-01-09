@@ -4,7 +4,7 @@ use yew::prelude::*;
 use ammonia::clean;
 use pulldown_cmark::{Parser, Options, html::push_html};
 
-use crate::{UserContext, bind::{get_jwt_from_cookie, upload_file_with_fetch}, dto::Resp, forum::{add_post, edit_post}};
+use crate::{UserContext, bind::{upload_file_with_fetch}, dto::Resp, forum::{add_post, edit_post}};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
@@ -116,9 +116,7 @@ pub fn Editor(props: &Props) -> Html {
 
                 let insert = insert.clone();
                 wasm_bindgen_futures::spawn_local(async move {
-                    let token = get_jwt_from_cookie("token")
-                        .unwrap_or_default();
-                    if let Ok(res) = upload_file_with_fetch(&token, "/forum/upload_image", &file).await {
+                    if let Ok(res) = upload_file_with_fetch("/forum/upload_image", &file).await {
                         crate::c_log!("{}", res.avatar_url);
                         crate::c_log!("{}", res.filename);
                         insert.emit(res.avatar_url.replace("0.0.0.0",crate::ADDR));

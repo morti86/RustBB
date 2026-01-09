@@ -250,7 +250,7 @@ pub async fn read_file_as_bytes(file: &File) -> Result<Vec<u8>, JsValue> {
     Ok(bytes)
 }
 
-pub async fn upload_file_with_fetch(token: &str, url: &str, file: &File) -> Result<ImageUploadResponse, JsValue> {
+pub async fn upload_file_with_fetch(url: &str, file: &File) -> Result<ImageUploadResponse, JsValue> {
     let addr = format!("{}{}", ADDR, url);
     let window = web_sys::window().unwrap();
 
@@ -263,7 +263,7 @@ pub async fn upload_file_with_fetch(token: &str, url: &str, file: &File) -> Resu
     // Don't set Content-Type header - FormData will set it automatically with boundary
     // Only set Authorization header
     let headers = Headers::new()?;
-    headers.set("Authorization", &format!("Bearer {}", token))?;
+    opts.set_credentials(web_sys::RequestCredentials::Include);
     opts.set_headers(&headers);
     opts.set_body(&form_data);
 

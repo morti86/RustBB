@@ -28,6 +28,7 @@ mod text;
 
 static ADDR: &str = "http://localhost:8080";
 static DATEFORMAT: &str = "%Y-%m-%d %H:%M";
+static DATEFORMAT_SIMPLE: &str = "%Y-%m-%d";
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct Ctx {

@@ -23,3 +23,5 @@ target
 session.vim
 *.ods
 acc
+
+frontend/dist/**

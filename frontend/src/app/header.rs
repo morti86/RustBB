@@ -25,7 +25,9 @@ pub fn Header() -> Html {
         c_c.dispatch(None);
         navigator.push(&Route::Content);
         wasm_bindgen_futures::spawn_local(async move {
-            crate::user::logout().await;
+            if let Err(e) = crate::user::logout().await {
+                crate::c_error!("Logout error: {:?}", e);
+            }
         });
         
     });

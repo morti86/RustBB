@@ -43,20 +43,21 @@ pub fn UserList() -> Html {
 
 
     html! {
-        <div class="grid p-2 grid-cols-1">
+        <div class="grid p-2 grid-cols-1 space-y-2">
         <div class="space-x-2">
-            <button id="next_page" onclick={on_next_page} disabled={(*page).clone().unwrap_or(1)==1} >{"Next"}</button>
-            <button id="first_page" onclick={on_start_page} disabled={(*page).is_none()} >{"First"}</button>
+            <button id="first_page" onclick={on_start_page} disabled={(*page).clone().unwrap_or(1)==1} >{"First"}</button>
+            <button id="next_page" onclick={on_next_page} disabled={users.is_empty()} >{"Next"}</button>
         </div>
 
         {for users.iter().map(|u|
                 html! {
                     <Link<crate::Route> to={crate::Route::User { id: u.id.clone() }}>
-                        <div class="flex">
-                            <div class="rounded-xl py-2 px-5 flex-none">{u.name.clone()}</div>
+                        <div class="border rounded-xl border-zinc-800 grid grid-cols-6 text-xs">
+                            <div class="rounded-xl py-2 px-5">{u.name.clone()}</div>
                             <div class="rounded-xl py-2 px-5">{u.email.clone()}</div>
                             <div class="rounded-xl py-2 px-5">{u.role.clone()}</div>
-                            <div class="rounded-xl py-2 px-5 flex-1">{u.description()}</div>
+                            <div class="rounded-xl py-2 px-5 col-span-2">{u.description()}</div>
+                            <div class="rounded-xl py-2 px-5">{u.created_at.format(crate::DATEFORMAT).to_string()}</div>
                         </div>
                     </Link<crate::Route>>
                 }

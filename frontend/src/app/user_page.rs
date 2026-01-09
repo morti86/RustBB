@@ -1,8 +1,8 @@
-use web_sys::Response;
+use web_sys::{HtmlInputElement, Response};
 use yew::prelude::*;
 use wasm_bindgen::{UnwrapThrowExt, JsCast};
 
-use crate::{c_log, dto::UserData, user::{unban_user, update_user, user, warn_user}};
+use crate::{bind::upload_file_with_fetch, c_log, dto::UserData, user::{unban_user, update_user, user, warn_user}};
 
 macro_rules! display_thing {
     ($name:ident, $value:expr) => {
@@ -165,7 +165,7 @@ pub fn UserPage(props: &Props) -> Html {
         wasm_bindgen_futures::spawn_local(async move {
             let user = user(&user_id).await
                 .unwrap_throw();
-            let edit = can_edit(&ctx, &user.role);
+            let edit = can_edit(&c_c, &user.role);
             let s = if let Some(u) = c_c.user.as_ref() {
                 u.id == user.id
             } else {
@@ -222,6 +222,47 @@ pub fn UserPage(props: &Props) -> Html {
 
     });
 
+    let u_c = user_data.clone();
+    let on_file_upload = {
+        //let im_c = image_data.clone();
+        Callback::from(move |_e: Event| {
+            let u_c = u_c.clone();
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+            let element: HtmlInputElement = document
+                .get_element_by_id("file_upload")
+                .expect("element not found")
+                .dyn_into()
+                .expect("wrong thing");
+            if let Some(files) = element.files()
+                && let Some(file) = files.get(0) {
+
+                wasm_bindgen_futures::spawn_local(async move {
+                    if let Ok(res) = upload_file_with_fetch("/user/avatar", &file).await {
+                        let mut u = (*u_c).clone();
+                        u.avatar = Some(res.filename);
+                        u_c.set(u);
+                    } else {
+                        let mut u = (*u_c).clone();
+                        u.avatar = None;
+                        u_c.set(u);
+                    }
+                });
+            } else {
+                crate::c_log!("No files");
+            }
+        })
+    };
+
+    let u_c = user_data.clone();
+    let on_av_delete = Callback::from(move |_e: MouseEvent| {
+        let u_c = u_c.clone();
+        let mut u = (*u_c).clone();
+        u.avatar = None;
+        u_c.set(u);
+    });
+
+    let c_c = ctx.clone();
     let user = user_data.clone();
     if !*edit_mode && !*self_edit {
         html! {
@@ -234,6 +275,10 @@ pub fn UserPage(props: &Props) -> Html {
                 {display_thing!(facebook, user.facebook.clone().unwrap_or_default())}
                 {display_thing!(discord, user.discord.clone().unwrap_or_default())}
                 {display_thing!(x, user.x_id.clone().unwrap_or_default())}
+                <div class="flex flex-auto p-2 space-x-4">
+                    <div class="flex-none w-20">{"avatar"}</div>
+                    <img src={format!("{}/uploads/{}", crate::ADDR, user.avatar())} class="w-32"/>
+                </div>
             </div>
         }
     } else {
@@ -250,6 +295,25 @@ pub fn UserPage(props: &Props) -> Html {
                         {display_thing!(facebook, user.facebook.clone().unwrap_or_default(), on_facebook_input)}
                         {display_thing!(discord, user.discord.clone().unwrap_or_default(), on_discord_input)}
                         {display_thing!(x, user.x_id.clone().unwrap_or_default(), on_x_id_input)}
+                        <div class="flex flex-auto p-2 space-x-4">
+                            <div class="flex-none w-20">{"avatar"}</div>
+                            <div id="avatar_update" class="grid grid-flow-col grid-rows-3 gap-4">
+                                <img src={format!("{}/uploads/{}", crate::ADDR, user.avatar())} class="w-32 row-span-3"/>
+                                <div></div>
+                                <input
+                                    type="file"
+                                    id="file_upload"
+                                    accept="image/*"
+                                    disabled={user.id != c_c.id()}
+                                    class="px-4 py-2 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-2 bg-neutral-secondary-medium block bg-rose-800"
+                                    onchange={on_file_upload}
+                                    />
+                                <button id="delete_av" onclick={on_av_delete}>
+                                    {"delete"}
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
                     <input type="submit" 
                         class="px-3 py-1 bg-indigo-700 rounded-xl font-medium hover:bg-violet-600 transition-colors"
