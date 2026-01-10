@@ -10,7 +10,7 @@ use crate::{Route, dto::UserData};
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
     pub user_id: String,
-    pub user_cache: Rc<HashMap<String, UserData>>,
+    pub user_cache: Rc<std::cell::RefCell<HashMap<String, UserData>>>,
 }
 
 #[component]
@@ -28,7 +28,7 @@ pub fn User(props: &Props) -> Html {
     use_effect(|| {
         wasm_bindgen_futures::spawn_local(async move {
             if !u_c.is_empty() && !*l_c {
-                if let Some(user_data) = cache.get(&*u_c) {
+                if let Some(user_data) = cache.borrow().get(&*u_c) {
                     let b = user_data.is_banned();
                     u.set(Some(user_data.clone()));
                     b_c.set(b);
@@ -36,11 +36,8 @@ pub fn User(props: &Props) -> Html {
                 } else {
                     let fu = crate::user::user(&u_c).await.unwrap_throw();
                     let b = fu.is_banned();
-                    unsafe {
-                        #[allow(mutable_transmutes)]
-                        let mut_r: &mut HashMap<String, UserData> = std::mem::transmute(&*cache);
-                        mut_r.insert((*u_c).clone() ,fu);
-                    }
+                    let mut ud = cache.borrow_mut();
+                    ud.insert((*u_c).clone(), fu);
                     b_c.set(b);
                     l_c.set(false);
                 }

@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use app::register::Register;
@@ -136,8 +137,7 @@ pub enum Route {
 fn App() -> Html {
     let ctx = use_reducer(Ctx::default);
     let c_c = ctx.clone();
-    let user_cache = Rc::new(  HashMap::<String, dto::UserData>::new());
-    
+    let user_cache = Rc::new( RefCell::new( HashMap::<String, dto::UserData>::new() ) );
     use_effect_with((), move |_| {
         wasm_bindgen_futures::spawn_local(async move {
             let m = me().await;

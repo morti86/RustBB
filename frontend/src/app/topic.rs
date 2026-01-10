@@ -13,7 +13,7 @@ use wasm_bindgen::JsCast;
 pub struct Props {
     pub section: i64,
     pub id: i64,
-    pub user_cache: Rc<HashMap<String, UserData>>,
+    pub user_cache: Rc<std::cell::RefCell<HashMap<String, UserData>>>,
 }
 
 #[component]
