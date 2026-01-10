@@ -16,6 +16,8 @@ use crate::app::section::Section;
 use crate::app::topic::Topic;
 use crate::app::section_list::SectionList;
 use crate::app::user_page::UserPage;
+use crate::app::inbox::Inbox;
+use std::collections::HashMap;
 
 mod bind;
 //mod error;
@@ -123,6 +125,8 @@ pub enum Route {
     User { id: String },
     #[at("/users")]
     UserList,
+    #[at("/messages")]
+    Messages,
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -132,6 +136,8 @@ pub enum Route {
 fn App() -> Html {
     let ctx = use_reducer(Ctx::default);
     let c_c = ctx.clone();
+    let user_cache = Rc::new(  HashMap::<String, dto::UserData>::new());
+    
     use_effect_with((), move |_| {
         wasm_bindgen_futures::spawn_local(async move {
             let m = me().await;
@@ -158,6 +164,7 @@ fn App() -> Html {
         })
     };
 
+    let u_c = user_cache.clone();
     html! {
         <ContextProvider<UserContext> context={ctx}>
         <BrowserRouter>
@@ -185,11 +192,12 @@ fn App() -> Html {
                                 on_oauth_start={on_oauth_start}
                                 />
                             },
-                        Route::Topic {s_id, id} => html! { <Topic id={id} section={s_id}/> },
+                        Route::Topic {s_id, id} => html! { <Topic id={id} section={s_id} user_cache={u_c.clone()}/> },
                         Route::User {id} => html! { <UserPage id={id} /> },
                         Route::UserList => html! { <UserList/> },
                         Route::Section {id} => html! { <Section id={id} /> },
                         Route::OAuthCallback => html! { <OAuthCallback/> },
+                        Route::Messages => html! { <Inbox/> },
                         Route::NotFound => html! { <h1>{"404 not"}</h1> },
                     }
                 }} />

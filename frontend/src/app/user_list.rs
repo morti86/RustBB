@@ -49,19 +49,24 @@ pub fn UserList() -> Html {
             <button id="next_page" onclick={on_next_page} disabled={users.is_empty()} >{"Next"}</button>
         </div>
 
-        {for users.iter().map(|u|
-                html! {
-                    <Link<crate::Route> to={crate::Route::User { id: u.id.clone() }}>
-                        <div class="border rounded-xl border-zinc-800 grid grid-cols-6 text-xs">
-                            <div class="rounded-xl py-2 px-5">{u.name.clone()}</div>
-                            <div class="rounded-xl py-2 px-5">{u.email.clone()}</div>
-                            <div class="rounded-xl py-2 px-5">{u.role.clone()}</div>
-                            <div class="rounded-xl py-2 px-5 col-span-2">{u.description()}</div>
-                            <div class="rounded-xl py-2 px-5">{u.created_at.format(crate::DATEFORMAT).to_string()}</div>
-                        </div>
-                    </Link<crate::Route>>
-                }
-        )}
+        {for users.iter().map(|u| {
+            let banned = u.is_banned();
+            html! {
+                <Link<crate::Route> to={crate::Route::User { id: u.id.clone() }}>
+                    <div class="border rounded-xl border-zinc-800 grid grid-cols-6 text-xs">
+                        <div class={classes!{"py-2", "px-5", banned_indicator(banned)}}>{u.name.clone()}</div>
+                        <div class="py-2 px-5">{u.email.clone()}</div>
+                        <div class="py-2 px-5">{u.role.clone()}</div>
+                        <div class="py-2 px-5 col-span-2">{u.description()}</div>
+                        <div class="py-2 px-5">{u.created_at.format(crate::DATEFORMAT).to_string()}</div>
+                    </div>
+                </Link<crate::Route>>
+            }
+        })}
         </div>
     }
+}
+
+fn banned_indicator(b: bool) -> &'static str {
+    if b { "line-through" } else { "" }
 }

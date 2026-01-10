@@ -305,7 +305,9 @@ pub fn UserPage(props: &Props) -> Html {
                                     id="file_upload"
                                     accept="image/*"
                                     disabled={user.id != c_c.id()}
-                                    class="px-4 py-2 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-2 bg-neutral-secondary-medium block bg-rose-800"
+                                    class="px-4 py-2 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-2 
+                                            bg-neutral-secondary-medium block bg-rose-800 disabled:hover:bg-rose-950 disabled:bg-rose-950
+                                            disabled:text-zinc-600"
                                     onchange={on_file_upload}
                                     />
                                 <button id="delete_av" onclick={on_av_delete}>

@@ -1,8 +1,10 @@
+use std::{collections::HashMap, rc::Rc};
+
 use web_sys::Element;
 use yew::prelude::*;
 use wasm_bindgen::UnwrapThrowExt;
 use yew_router::hooks::use_navigator;
-use crate::{dto::{Post, Thread}, forum::{delete_post, edit_thread, get_thread, new_thread}};
+use crate::{dto::{Post, Thread, UserData}, forum::{delete_post, edit_thread, get_thread, new_thread}};
 use super::user::User;
 use super::editor::Editor;
 use wasm_bindgen::JsCast;
@@ -11,6 +13,7 @@ use wasm_bindgen::JsCast;
 pub struct Props {
     pub section: i64,
     pub id: i64,
+    pub user_cache: Rc<HashMap<String, UserData>>,
 }
 
 #[component]
@@ -27,9 +30,11 @@ pub fn Topic(props: &Props) -> Html {
     let navigator = use_navigator().unwrap_throw();
     let ctx = use_context::<crate::UserContext>()
         .expect("Expected context");
+    let user_cache = props.user_cache.clone();
     let anon = ctx.is_none();
     let p_c = posts.clone();
     let l_c = loaded.clone();
+
     use_effect_with(l_c, move |_| {
         p_c.iter().for_each(|p| {
             let id = p.id;
@@ -169,6 +174,7 @@ pub fn Topic(props: &Props) -> Html {
             l_c.set(false);
         });
 
+        
         html! {
             <div class="space-y-5">
                 <div class="space-x-2">
@@ -177,7 +183,7 @@ pub fn Topic(props: &Props) -> Html {
                 </div>
                 <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-5 grid grid-cols-6 space-x-2">
                     <div>
-                        <User user_id={meta.author.clone()}/>
+                        <User user_id={meta.author.clone()} user_cache={user_cache.clone()}/>
                     </div>
                     <div class="col-span-5 grid grid-cols-1">
                         <span class="text-xl text-cyan-200">{&meta.title}</span>
@@ -195,7 +201,7 @@ pub fn Topic(props: &Props) -> Html {
                     html! {
                         <div class="grid grid-cols-6 space-x-2">
                             <div>
-                                <User user_id={p.author.clone().unwrap_or_default()}/>
+                                <User user_id={p.author.clone().unwrap_or_default()} user_cache={user_cache.clone()}/>
                             </div>
                             <div class="col-span-5 grid grid-cols-1 bg-zinc-900/50 p-5 rounded-2xl">
                                     <span class="text-zinc-400 row-span-6" id={post_id}>

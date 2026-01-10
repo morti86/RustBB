@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{Extension, Json, Router, extract::{Path, Query}, middleware::{self, from_fn}, response::IntoResponse, routing::{get, post, put}};
 use axum::extract::Multipart;
 use validator::Validate;
-use crate::{AppState, error::ForumError, middleware::auth};
+use crate::{AppState, error::ForumError, middleware::{auth, is_banned}};
 use crate::{db::user::UserExt,
     models::UserRole,
     dto::user,
@@ -19,7 +19,9 @@ pub fn user_handler() -> Router<AppState> {
                     role_check(state, req, next, vec![UserRole::Admin, UserRole::Mod]) );
 
     Router::new()
-        .route("/me", get(get_me).layer(from_fn(auth)) )
+        .route("/me", get(get_me)
+            .layer(from_fn(is_banned))
+            .layer(from_fn(auth)) )
         .route("/user/{uuid}", get(get_user_data))
         .route("/user/{uuid}", post(update_user_data).layer(from_fn(auth)))
         .route("/list", get(get_users))
@@ -32,8 +34,8 @@ pub fn user_handler() -> Router<AppState> {
             .layer(from_fn(auth))
             )
         .route("/warn", put(warn_user)
-            .layer(from_fn(auth))
             .layer(admin_mod_only)
+            .layer(from_fn(auth))
         )
         .route("/pms", get(get_pms).layer(from_fn(auth)) )
         .route("/avatar", post(upload_avatar))

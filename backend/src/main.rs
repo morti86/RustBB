@@ -24,6 +24,7 @@ use std::net::SocketAddr;
 use axum_extra::extract::cookie::Key;
 use dashmap::DashMap;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
 
 mod config;
 mod models;
@@ -160,6 +161,25 @@ async fn main() -> Result<()> {
         .allow_credentials(true)
         .allow_methods([Method::GET, Method::POST,Method::PUT,Method::DELETE]);
     
+    let governor_conf = Arc::new(
+        GovernorConfigBuilder::default()
+            .per_second(10)
+            .burst_size(25)
+            .finish()
+            .unwrap(),
+    );
+
+    let governor_limiter = governor_conf.limiter().clone();
+    let interval = tokio::time::Duration::from_secs(60);
+    // a separate background task to clean up
+    tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(interval).await;
+            tracing::info!("rate limiting storage size: {}", governor_limiter.len());
+            governor_limiter.retain_recent();
+        }
+    });
+
     let db_client = DBClient::new(pool);
 
     let app_state = AppState {
@@ -171,7 +191,10 @@ async fn main() -> Result<()> {
     };
 
     let a = Arc::new(app_state.clone());
-    let app = create_router(a).layer(cors).with_state(app_state);
+    let app = create_router(a)
+        .layer(GovernorLayer::new(governor_conf))
+        .layer(cors)
+        .with_state(app_state);
 
     // Start server
     let app_url = env::var("HOST_URL").unwrap_or("127.0.0.1".to_string());
@@ -184,7 +207,7 @@ async fn main() -> Result<()> {
         let url: SocketAddr = format!("{}:{}", app_url, app_port).parse()?;
 
         axum_server::bind_rustls(url, tls_config)
-            .serve(app.into_make_service())
+            .serve(app.into_make_service_with_connect_info::<SocketAddr>())
             .await?;
         info!("Started HTTPS service at {}:{}",app_url, app_port);
     } else {
@@ -195,7 +218,7 @@ async fn main() -> Result<()> {
 
         let url: SocketAddr = format!("{}:{}", app_url, app_port).parse()?;
         axum_server::bind(url)
-            .serve(app.into_make_service())
+            .serve(app.into_make_service_with_connect_info::<SocketAddr>())
             .await?;
         info!("Started HTTP service at {}:{}",app_url, app_port);
     }

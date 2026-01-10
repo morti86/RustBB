@@ -34,3 +34,4 @@ oauth2 = { version = "5.0.0", features = ["reqwest"] }
 thiserror = "2.0.17"
 dashmap = { version = "6.1.0", features = ["serde"] }
 infer = "0.19.0"
+tower_governor = { version = "0.8.0", features = ["tracing"] }

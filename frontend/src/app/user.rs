@@ -1,37 +1,49 @@
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 
 use yew::prelude::*;
 use yew_router::prelude::Link;
 use wasm_bindgen::UnwrapThrowExt;
 
-use crate::{Route, c_log, dto::UserData};
+use crate::{Route, dto::UserData};
 
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
     pub user_id: String,
+    pub user_cache: Rc<HashMap<String, UserData>>,
 }
 
 #[component]
 pub fn User(props: &Props) -> Html {
     let user_id = Rc::new(props.user_id.clone());
+    let cache = props.user_cache.clone();
     let user = use_state(|| None::<UserData>);
     let loaded = use_state(|| false);
     let banned = use_state(|| false);
     
-    c_log!("user id: {}", user_id);
     let u = user.clone();
     let l_c = loaded.clone();
     let b_c = banned.clone();
-    use_memo(user_id, |uid| {
-        let uid = uid.clone();
+    let u_c = user_id.clone();
+    use_effect(|| {
         wasm_bindgen_futures::spawn_local(async move {
-            if !uid.is_empty() && !*l_c {
-                let fu = crate::user::user(&uid).await.unwrap_throw();
-                let b = fu.is_banned();
-                u.set(Some(fu));
-                l_c.set(true);
-                b_c.set(b);
+            if !u_c.is_empty() && !*l_c {
+                if let Some(user_data) = cache.get(&*u_c) {
+                    let b = user_data.is_banned();
+                    u.set(Some(user_data.clone()));
+                    b_c.set(b);
+                    l_c.set(true);
+                } else {
+                    let fu = crate::user::user(&u_c).await.unwrap_throw();
+                    let b = fu.is_banned();
+                    unsafe {
+                        #[allow(mutable_transmutes)]
+                        let mut_r: &mut HashMap<String, UserData> = std::mem::transmute(&*cache);
+                        mut_r.insert((*u_c).clone() ,fu);
+                    }
+                    b_c.set(b);
+                    l_c.set(false);
+                }
             }
         });
     });

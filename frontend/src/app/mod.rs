@@ -7,6 +7,7 @@ pub mod header;
 pub mod topic;
 pub mod user_page;
 pub mod user_list;
+pub mod inbox;
 
 mod user;
 mod editor;
