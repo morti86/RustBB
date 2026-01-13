@@ -1,0 +1,18 @@
+{
+	"label_title": "test forum",
+	"label_description": "forum testowe",
+
+	"next": "następna strona",
+	"first_page": "pierwsza strona",
+	"username": "nazwa użytkownika",
+	"password": "hasło",
+	"new_user": "Nowy? Zarejestruj się.",
+	"login": "zaloguj się",
+	"register": "zarejestruj się",
+	"password_confirm": "potwierdź hasło",
+	"email": "email",
+	"Admin": "Administarator",
+	"Mod": "Moderator",
+	"User": "Użytkownik",
+	"avatar": "avatar"
+}

@@ -2,7 +2,7 @@ use core::str;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 use chrono::{DateTime, Utc};
-use crate::models::UserRole;
+use crate::models::{PostReaction, UserRole};
 
 pub fn validate_roles<T>(v: &Vec<T>) -> Result<(), ValidationError> {
     if v.len() == 0 {
@@ -152,4 +152,10 @@ pub struct GetSectionResponseDto {
 pub struct ActiveUsersDto {
     pub count: usize,
     pub users: Vec<crate::UserSession>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PostReactionsList {
+    pub post_id: i64,
+    pub reactions: Vec<PostReaction>,
 }

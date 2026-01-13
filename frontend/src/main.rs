@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#[macro_use]
+extern crate rust_i18n;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -19,6 +21,8 @@ use crate::app::section_list::SectionList;
 use crate::app::user_page::UserPage;
 use crate::app::inbox::Inbox;
 use std::collections::HashMap;
+
+i18n!("locales");
 
 mod bind;
 //mod error;
@@ -137,8 +141,13 @@ pub enum Route {
 fn App() -> Html {
     let ctx = use_reducer(Ctx::default);
     let c_c = ctx.clone();
+    let trigger = use_force_update();
     let user_cache = Rc::new( RefCell::new( HashMap::<String, dto::UserData>::new() ) );
+
     use_effect_with((), move |_| {
+        let lang = bind::get_ls("language")
+            .unwrap_or(String::from("en"));
+        rust_i18n::set_locale(&lang);
         wasm_bindgen_futures::spawn_local(async move {
             let m = me().await;
             match m {
@@ -153,6 +162,12 @@ fn App() -> Html {
                 }
             }
         });
+    });
+
+    let update_callback = Callback::from(move |lang: String| {
+        bind::set_ls("language",&lang);
+        rust_i18n::set_locale(&lang);
+        trigger.force_update();
     });
 
     // Create callback for OAuth start
@@ -174,11 +189,10 @@ fn App() -> Html {
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
                 <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
             </div>
-
             <div class="max-w-4xl mx-auto">
                 // Header
                 <div class="flex items-center justify-between mb-8">
-                    <Header/>
+                    <Header uc={update_callback.clone()}/>
                 </div>
                 // Content
                 <Switch<Route> render={move |routes: Route| {
@@ -197,7 +211,7 @@ fn App() -> Html {
                         Route::UserList => html! { <UserList/> },
                         Route::Section {id} => html! { <Section id={id} /> },
                         Route::OAuthCallback => html! { <OAuthCallback/> },
-                        Route::Messages => html! { <Inbox/> },
+                        Route::Messages => html! { <Inbox user_cache={u_c.clone()}/> },
                         Route::NotFound => html! { <h1>{"404 not"}</h1> },
                     }
                 }} />

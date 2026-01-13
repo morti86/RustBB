@@ -45,8 +45,8 @@ pub fn UserList() -> Html {
     html! {
         <div class="grid p-2 grid-cols-1 space-y-2">
         <div class="space-x-2">
-            <button id="first_page" onclick={on_start_page} disabled={(*page).clone().unwrap_or(1)==1} >{"First"}</button>
-            <button id="next_page" onclick={on_next_page} disabled={users.is_empty()} >{"Next"}</button>
+            <button id="first_page" onclick={on_start_page} disabled={(*page).clone().unwrap_or(1)==1} >{t!("firstp")}</button>
+            <button id="next_page" onclick={on_next_page} disabled={users.is_empty()} >{t!("next")}</button>
         </div>
 
         {for users.iter().map(|u| {

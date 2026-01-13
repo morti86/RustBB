@@ -159,7 +159,7 @@ pub fn Login(props: &Props) -> Html {
                         if let Some(err) = (*error).as_ref() {
                             <div class="error">{err}</div>
                         }
-                        <label for="username">{"username:"}</label><br/>
+                        <label for="username">{t!("usrn")}</label><br/>
                         <input type="text"
                             id="username"
                             class="text-violet-700 bg-pink-100"
@@ -167,7 +167,7 @@ pub fn Login(props: &Props) -> Html {
                             oninput={on_username_input}
                             value={(*username).clone()}
                             /><br/>
-                        <label for="password">{"password:"}</label><br/>
+                        <label for="password">{t!("pass")}</label><br/>
                         <input type="password"
                             id="password"
                             class="text-violet-700 bg-pink-100"
@@ -177,7 +177,7 @@ pub fn Login(props: &Props) -> Html {
                             />
                             <br/>
                         <input type="submit" 
-                            value="Login" 
+                            value={t!("login")}
                             class="px-4 py-2 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors"/>
                     </form>
                     
@@ -197,7 +197,7 @@ pub fn Login(props: &Props) -> Html {
                             <img src={format!("{}/uploads/discord.png", crate::ADDR)} class="h-6 w-6"/> 
                             {"Discord"}
                         </button>
-                        <Link<crate::Route> to={crate::Route::Register}>{"New user? Register now!"}</Link<crate::Route>>
+                        <Link<crate::Route> to={crate::Route::Register}>{t!("nurr")}</Link<crate::Route>>
                     </div>
                 </div>
             }

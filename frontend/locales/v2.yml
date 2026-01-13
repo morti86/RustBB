@@ -1,0 +1,95 @@
+_version: 2
+
+title:
+  en: "Test forum"
+  pl: "Forum testowe"
+fdesc:
+  en: "Just a forum for testing things"
+  pl: "Forum do testowania"
+home:
+  en: "home"
+  pl: "początek"
+login:
+  en: "login"
+  pl: "zaloguj się"
+pass:
+  en: "password"
+  pl: "hasło"
+ppass:
+  en: "repeat password"
+  pl: "powtórz hasło"
+usrn:
+  en: "username"
+  pl: "nazwa użytkownika"
+register:
+  en: "register"
+  pl: "zarejestruj się"
+users:
+  en: "users"
+  pl: "użytkownicy"
+inbox:
+  en: "inbox"
+  pl: "wiadomości"
+new_t:
+  en: "new thread"
+  pl: "nowy wątek"
+new_p:
+  en: "new post"
+  pl: "nowy post"
+firstp:
+  en: "first page"
+  pl: "pierwsza strona"
+next:
+  en: "next"
+  pl: "następna"
+desc:
+  en: "description"
+  pl: "opis"
+del:
+  en: "delete"
+  pl: "usuń"
+edit:
+  en: "edit"
+  pl: "edytuj"
+adds:
+  en: "add section"
+  pl: "dodaj sekcję"
+sname:
+  en: "section name"
+  pl: "nazwa sekcji"
+adms:
+  en: "admins"
+  pl: "admini"
+mods:
+  en: "moderators"
+  pl: "moderatorzy"
+users:
+  en: "users"
+  pl: "użytkownicy"
+allf:
+  en: "allowed for"
+  pl: "dozwolone dla"
+lockd:
+  en: "locked"
+  pl: "zablokowany"
+void:
+  en: ""
+  pl: ""
+uusr:
+  en: "unknown user"
+  pl: "nieznany użytkownik"
+anon:
+  en: "anonymous"
+  pl: "anonimowy"
+nurr:
+  en: "new user? register now!"
+  pl: "nowy? zarejestruj się teraz!"
+addsc:
+  en: "add section"
+  pl: "dodaj sekcję"
+msgs:
+  en: "received messages"
+  pl: "otrzymane wiadomości"
+nothr:
+  en: "no threads"
+  pl: "brak wątków"

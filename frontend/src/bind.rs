@@ -202,7 +202,7 @@ pub fn del_cookie(key: &str) {
         .expect("reload failed in del_cookie");
 }
 
-pub fn get_jwt_from_cookie(cookie_name: &str) -> Option<String> {
+pub fn get_from_cookie(cookie_name: &str) -> Option<String> {
     parse_cookies()
         .and_then(|cookies| cookies.get(cookie_name).cloned())
 }
@@ -214,6 +214,25 @@ fn create_element(tag: &str) -> Result<HtmlElement, JsValue> {
         .expect("ce: expect doc");
     let element = document.create_element(tag)?;
     Ok(element.dyn_into::<HtmlElement>().unwrap())
+}
+
+pub fn set_ls(key: &str, value: &str) {
+    if let Some(w) = web_sys::window()
+        && let Ok(Some(ls)) = w.local_storage() {
+            if let Err(e) = ls.set_item(key, value) {
+                c_error!("ls error {:?}", e);
+            }
+    }
+}
+
+pub fn get_ls(key: &str) -> Option<String> {
+    if let Some(w) = web_sys::window()
+        && let Ok(Some(ls)) = w.local_storage() {
+        ls.get_item(key)
+            .unwrap_or_default()
+    } else {
+        None
+    }
 }
 
 #[wasm_bindgen]
@@ -278,4 +297,116 @@ pub async fn upload_file_with_fetch(url: &str, file: &File) -> Result<ImageUploa
     let json = wasm_bindgen_futures::JsFuture::from(response.json()?).await?;
 
     Ok(ImageUploadResponse::from(json))
+}
+
+// ---- Enum maker ----
+
+#[macro_export]
+macro_rules! make_enum {
+    ($name:ident, [$op1:ident]) => {
+        #[derive(Clone, Debug, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+        pub enum $name {
+            $op1,
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name::$op1
+            }
+        }
+
+        impl $name {
+            // Fixed array with commas
+            pub const ALL: &'static [Self] = &[$name::$op1];
+
+            pub fn to_string(&self) -> String {
+                match self {
+                    $name::$op1 => stringify!($op1).to_string(),
+                }
+            }
+
+            pub fn as_str(&self) -> &str {
+                match self {
+                    $name::$op1 => casey::lower!(stringify!($op1)),
+                }
+            }
+        }
+
+        impl From<String> for $name {
+            fn from(s: String) -> Self {
+                let s = s.as_str();
+                match s {
+                    _ => $name::$op1,
+                }
+
+            }
+        }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str(self.to_string().as_str())
+            }
+        }
+
+
+    };
+
+    ($name:ident, [$op1:ident, $($opt:ident),*]) => {
+        #[derive(Clone, Debug, Copy, Eq, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
+        pub enum $name {
+            $op1,
+            $(
+                $opt,
+            )*
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name::$op1
+            }
+        }
+
+        impl $name {
+            // Fixed array with commas
+            pub const ALL: &'static [Self] = &[$name::$op1, $($name::$opt),+];
+
+            pub fn to_string(&self) -> String {
+                match self {
+                    $name::$op1 => stringify!($op1).to_string(),
+                    $(
+                        $name::$opt => stringify!($opt).to_string(),
+                    )*
+                }
+            }
+
+            pub fn as_str(&self) -> &str {
+                match self {
+                    $name::$op1 => stringify!($op1),
+                    $(
+                        $name::$opt => stringify!($opt),
+                    )*
+                }
+            }
+        }
+
+        impl From<String> for $name {
+            fn from(s: String) -> Self {
+                let s = s.as_str();
+                match s {
+                    stringify!($op1) => $name::$op1,
+                    $(
+                        stringify!($opt) => $name::$opt,
+                    )*
+                        _ => $name::$op1,
+                }
+
+            }
+        }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str(self.to_string().as_str())
+            }
+        }
+    };
 }

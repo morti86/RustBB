@@ -207,6 +207,38 @@ impl From<JsValue> for UserListResponseDto {
     }
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct UserPasswordUpdateDto {
+    pub new_password: String,
+    pub new_password_confirm: String,
+    pub old_password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GetUserPmsDto {
+    pub page: u32,
+    pub limit: usize,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct PrivateMessage {
+    pub id: i64,
+    pub author: Option<String>,
+    pub receiver: String,
+    pub content: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct UserPmsResponseDto {
+    pub pms: Vec<PrivateMessage>,
+}
+
+impl From<JsValue> for UserPmsResponseDto {
+    fn from(value: JsValue) -> Self {
+        from_value(value)
+            .unwrap_throw()
+    }
+}
 
 // ----- Forum -----
 

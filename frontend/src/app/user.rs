@@ -64,7 +64,7 @@ pub fn User(props: &Props) -> Html {
                                 <p class="text-fuchsia-800 text-xs">{user.posts_n.unwrap_or(0)}</p>
                             </div>
                         },
-                        None => html! { "unknown user" },
+                        None => html! { t!("uusr") },
                     }}
                 </div>
                 <img src={
@@ -75,7 +75,7 @@ pub fn User(props: &Props) -> Html {
                 <span class={classes!(vec![ "bottom-0", "rounded-full", "border-2", "border-zinc-900", "flex", "justify-center", "text-xs",  {status_colors(user.as_ref())} ] ) }>{
                     match user.as_ref() {
                         Some(user) => user.role.clone(),
-                        None => String::from("anonymous"),
+                        None => String::from(t!("anon")),
                     }
                 }</span>
 

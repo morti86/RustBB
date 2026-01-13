@@ -102,7 +102,7 @@ pub fn Register() -> Html {
                 if let Some(err) = (*error).as_ref() {
                     <div class="error">{err}</div>
                 }
-                <label for="username">{"username:"}</label><br/>
+                <label for="username">{t!("usrn")}</label><br/>
                 <input type="text"
                     id="username"
                     class="text-violet-700 bg-zinc-300"
@@ -111,7 +111,7 @@ pub fn Register() -> Html {
                     value={(*username).clone()}
                     pattern="[A-Za-z0-9]+"
                     /><br/>
-                <label for="password">{"password:"}</label><br/>
+                <label for="password">{t!("pass")}</label><br/>
                 <input type="password"
                     id="password"
                     class="text-violet-700 bg-zinc-300"
@@ -119,7 +119,7 @@ pub fn Register() -> Html {
                     oninput={on_password_input}
                     required=true
                     /><br/>
-                <label for="password_confirm">{"confirm password:"}</label><br/>
+                <label for="password_confirm">{t!("ppass")}</label><br/>
                 <input type="password"
                     id="password_confirm"
                     class="text-violet-700 bg-zinc-300"
@@ -127,7 +127,7 @@ pub fn Register() -> Html {
                     oninput={on_password_confirm_input}
                     required=true
                     /><br/>
-                <label for="email">{"email:"}</label><br/>
+                <label for="email">{"email"}</label><br/>
                 <input type="email"
                     id="email"
                     class="text-violet-700 bg-zinc-300"
@@ -138,7 +138,7 @@ pub fn Register() -> Html {
                 <div class="p-4 flex justify-center">
                     <input type="submit" 
                         class="px-3 py-1 bg-indigo-700 rounded-xl font-medium hover:bg-violet-600 transition-colors"
-                        value="Register"/>
+                        value={t!("register")}/>
                 </div>
             </form>
         </div>

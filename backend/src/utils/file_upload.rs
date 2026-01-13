@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use axum::extract::Path;
 use axum::response::IntoResponse;
+use axum::Json;
 use uuid::Uuid;
 use axum::{
     extract::Multipart,
@@ -108,7 +109,7 @@ pub fn get_avatar_url(config: &Config, filename: &str) -> String {
     format!("{}/uploads/{}", config.host_url, filename)
 }
 
-async fn serve_avatar(Path(image_id): Path<String>) -> ForumResult<impl IntoResponse> {
+pub async fn serve_avatar(Path(image_id): Path<String>) -> ForumResult<impl IntoResponse> {
     let upload_path = env!("UPLOAD_DIR");
 
     let file_path: PathBuf = [upload_path, &image_id].iter().collect();
@@ -140,4 +141,76 @@ async fn serve_avatar(Path(image_id): Path<String>) -> ForumResult<impl IntoResp
 
 
     }
+}
+
+pub async fn serve_localization(Path(loc_id): Path<String>) -> ForumResult<impl IntoResponse> {
+    let upload_path = env!("UPLOAD_DIR");
+    let file_path: PathBuf = [upload_path, &format!("locale/{}.json", loc_id)].iter().collect();
+
+    if !file_path.exists() {
+        let default_path = format!("{}/en.json", upload_path);
+        let default = fs::read(default_path.as_str())
+            .await?;
+
+      let body = axum::body::Body::from(default);
+        let response = axum::http::Response::builder()
+            .header("Content-Type", "application/json") // adjust based on format
+            .body(body)?;
+        Ok(response.into_response())
+    } else {
+        let contents = fs::read(&file_path)
+            .await?;
+
+        let body = axum::body::Body::from(contents);
+        let response = axum::http::Response::builder()
+            .header("Content-Type", "application/json") // adjust based on format
+            .body(body)?;
+        Ok(response.into_response())
+    }
+}
+
+pub async fn list_locales() -> ForumResult<impl IntoResponse> {
+    let upload_path = env!("UPLOAD_DIR");
+    let locales_dir = std::path::Path::new(upload_path).join("locale");
+
+    // Check if the locales directory exists
+    if !locales_dir.exists() {
+        return Ok(Json(Vec::<String>::new()));
+    }
+
+    let mut locales = Vec::new();
+
+    // Read the directory
+    match std::fs::read_dir(&locales_dir) {
+        Ok(entries) => {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    let path = entry.path();
+
+                    // Check if it's a file and has .json extension
+                    if path.is_file() {
+                        if let Some(extension) = path.extension() {
+                            if extension == "json" {
+                                if let Some(filename) = path.file_stem() {
+                                    if let Some(locale_name) = filename.to_str() {
+                                        locales.push(locale_name.to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            return Err(ForumError::ServerError(format!(
+                "Failed to read locales directory: {}", e
+            )));
+        }
+    }
+
+    // Sort locales alphabetically
+    locales.sort();
+
+    Ok(Json(locales))
 }

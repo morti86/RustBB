@@ -168,6 +168,16 @@ pub struct UserWarning {
 pub struct PrivateMessage {
     pub id: i64,
     pub author: Option<uuid::Uuid>,
+    pub author_name: Option<String>,
     pub receiver: uuid::Uuid,
     pub content: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct PostReaction {
+    pub id: i64,
+    pub post_id: i64,
+    pub user_id: uuid::Uuid,
+    pub r_type: String,
+}
+

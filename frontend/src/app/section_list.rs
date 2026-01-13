@@ -116,38 +116,38 @@ pub fn SectionList() -> Html {
         <div class="section-list">
             <div class="rounded-2xl grid grid-cols-2 gap-4">
                 {if ctx.is_admin() && new_section_data.is_none() {
-                    html! { <button class="bg-fuchsia-950/30 col-span-2 font-medium hover:bg-fuchsia-950/50" onclick={on_st_cr_sec}>{"Add section"}</button> }
+                    html! { <button class="bg-fuchsia-950/30 col-span-2 font-medium hover:bg-fuchsia-950/50" onclick={on_st_cr_sec}>{t!("adds")}</button> }
                 } else { html! { {""} } } }
                 {if let Some(new_s) = new_section_data.as_ref() {
                     html! {
                         <form id="new_post" class="grid grid-cols-3 space-y-2 col-span-2" onsubmit={on_cr_sec.clone()}>
                             <input type="submit"
-                                value="Add section sub"
+                                value={t!("addsc")}
                                 class="px-4 py-1 bg-fuchsia-950/30 col-span-3  rounded-xl font-medium hover:bg-fuchsia-950/60 transition-colors"/>
 
-                            <label for="s_name">{"section name"}</label>
+                            <label for="s_name">{t!("sname")}</label>
                             <input type="text" maxlength="20"
                                 id="s_name"
                                 class="bg-fuchsia-950/30 col-span-2"
                                 maxlength="50"
                                 value={new_s.name.clone()}
                                 oninput={on_name_change.clone()}/>
-                            <label for="s_desc">{"description"}</label>
+                            <label for="s_desc">{t!("desc")}</label>
                             <input type="text" maxlength="50"
                                 id="s_desc"
                                 class="bg-fuchsia-950/30 col-span-2"
                                 maxlength="50"
                                 value={new_s.description.clone()}
                                 oninput={on_desc_change.clone()}/>
-                            <label for="s_name">{"allowed_for"}</label>
+                            <label for="s_name">{t!("allf")}</label>
                             <div class="space-x-2 col-span-2">
-                                <label for="bew_a">{"admins"}</label>
+                                <label for="bew_a">{t!("adms")}</label>
                                 <input type="checkbox" id="bew_a" checked={true} disabled={true}/>
-                                <label for="bew_m">{"mods"}</label>
+                                <label for="bew_m">{t!("mods")}</label>
                                 <input type="checkbox" id="bew_m"
                                     checked={new_s.allowed_for.contains(&"Mod".to_string())}
                                     onchange={on_allowed_change.clone()}/>
-                                <label for="bew_u">{"users"}</label>
+                                <label for="bew_u">{t!("users")}</label>
                                 <input type="checkbox" id="bew_u"
                                     checked={new_s.allowed_for.contains(&"User".to_string())}
                                     onchange={on_allowed_change.clone()}/>

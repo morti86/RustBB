@@ -95,7 +95,7 @@ pub fn Topic(props: &Props) -> Html {
             <form id="new_thread" onsubmit={n_th_submit} class="space-y-5 p-2 space-x-2 grid grid-cols-1">
                 <input type="text" maxlength="20" value={(*meta).title.clone()} class="bg-fuchsia-950/40" oninput={on_title_change}/>
                 <textarea rows="10" maxlength="250" value={(*meta).content.clone()} class="bg-fuchsia-950/40" oninput={on_content_change}/>
-                <input type="submit" value="New thread" class="disabled:bg-zinc-900 disabled:hover:bg-zinc-900 hover:bg-fuchsia-600 bg-fuchsia-800 rounded-xl" disabled={anon}/>
+                <input type="submit" value={t!("new_t")} class="disabled:bg-zinc-900 disabled:hover:bg-zinc-900 hover:bg-fuchsia-600 bg-fuchsia-800 rounded-xl" disabled={anon}/>
             </form>
         }
     } else { // VIEW EXISTING
@@ -178,8 +178,8 @@ pub fn Topic(props: &Props) -> Html {
         html! {
             <div class="space-y-5">
                 <div class="space-x-2">
-                    <button onclick={pg_first} disabled={*page == 1}>{"First page"}</button>
-                    <button onclick={pg_next} disabled={posts.is_empty()}>{"Next page"}</button>
+                    <button onclick={pg_first} disabled={*page == 1}>{t!("firstp")}</button>
+                    <button onclick={pg_next} disabled={posts.is_empty()}>{t!("next")}</button>
                 </div>
                 <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-5 grid grid-cols-6 space-x-2">
                     <div>
@@ -218,13 +218,13 @@ pub fn Topic(props: &Props) -> Html {
                                                             class="px-4 py-1 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-4" 
                                                             onclick={on_click_ed.clone()}
                                                             id={format!("edit-{}", p.id)}>
-                                                            {"Edit"}
+                                                            {t!("edit")}
                                                         </button>
                                                         <button 
                                                             class="px-4 py-1 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-4" 
                                                             onclick={on_click_d.clone()}
                                                             id={format!("delete-{}", p.id)}>
-                                                            {"Delete"}
+                                                            {t!("del")}
                                                         </button>
                                                     </div>}
                                             }

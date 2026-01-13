@@ -1,0 +1,18 @@
+{
+	"label_title": "test forum",
+	"label_description": "forum for testing framework",
+
+	"next": "next page",
+	"first_page": "first page",
+	"username": "username",
+	"password": "password",
+	"new_user": "New user? Register now.",
+	"login": "login",
+	"register": "register",
+	"password_confirm": "password_confirm",
+	"email": "email",
+	"Admin": "Admin",
+	"Mod": "Moderator",
+	"User": "User",
+	"avatar": "avatar"
+}

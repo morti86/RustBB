@@ -61,7 +61,7 @@ pub fn Section(props: &Props) -> Html {
 
     html! {
         <div>
-            <Link<crate::Route> to={crate::Route::Topic { id: 0, s_id: section_id }}>{"New thread"}</Link<crate::Route>>
+            {if ctx.is_none() {html!{""}} else { html! {<Link<crate::Route> to={crate::Route::Topic { id: 0, s_id: section_id }}>{t!("new_t")}</Link<crate::Route>> } } }
             {
             if (*topic_list).is_empty() {
         
@@ -70,7 +70,7 @@ pub fn Section(props: &Props) -> Html {
                         html! {}
                     } else {
                         html! {
-                            <div >{"no threads"}</div>
+                            <div >{t!("nothr")}</div>
                         }
                     }
                 } else {
@@ -85,7 +85,6 @@ pub fn Section(props: &Props) -> Html {
                 } else {
                     html! { "" }
                 }}
-                    <p class="text-zinc-400 text-sm mb-1"> {format!("Section {}", props.id)} </p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                             {for (*topic_list).iter().map(|topic| {
                                 html! { 
@@ -94,7 +93,7 @@ pub fn Section(props: &Props) -> Html {
                                             <div class="grid grid-cols-2 gap-1">
                                                 <span class="text-xs mb-1">{&topic.author_name}</span>
                                                 <span class="text-l font-bold">{&topic.title}</span>
-                                                <span class="text-xs text-red-500">{if topic.locked {"LOCKED"} else {""}}</span>
+                                                <span class="text-xs text-red-500">{if topic.locked {t!("lockd")} else {t!("void")}}</span>
                                                 <span class="text-xs text-emerald-500">{&topic.created_at.format(crate::DATEFORMAT).to_string()}</span>
                                             </div>
                                         </div> 
@@ -106,8 +105,8 @@ pub fn Section(props: &Props) -> Html {
             }}
         }
         <div class="space-x-2">
-            <button id="next_page" onclick={on_next_page} disabled={!*is_some} >{"Next"}</button>
-            <button id="first_page" onclick={on_start_page} disabled={(*page).is_none()} >{"First"}</button>
+            <button id="next_page" onclick={on_next_page} disabled={!*is_some} >{t!("next")}</button>
+            <button id="first_page" onclick={on_start_page} disabled={(*page).is_none()} >{t!("firstp")}</button>
         </div>
 
         </div>

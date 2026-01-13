@@ -117,7 +117,8 @@ pub fn create_router(app_state: Arc<AppState>) -> Router<AppState> {
         .nest("/auth", handler::auth::auth_handler())
         .nest("/users", handler::user::user_handler() )
         .nest("/forum", handler::forum::forum_handler() )
-        .nest_service("/uploads", ServeDir::new(&app_state.env.upload_dir))
+        .nest("/uploads", handler::file_upload::file_upload_handler())
+        .nest_service("/static/uploads", ServeDir::new(&app_state.env.upload_dir))
         .layer(TraceLayer::new_for_http())
         .layer(Extension(app_state))
 }
@@ -163,8 +164,8 @@ async fn main() -> Result<()> {
     
     let governor_conf = Arc::new(
         GovernorConfigBuilder::default()
-            .per_second(10)
-            .burst_size(25)
+            .per_second(15)
+            .burst_size(30)
             .finish()
             .unwrap(),
     );

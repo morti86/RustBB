@@ -3,7 +3,7 @@ use wasm_bindgen::JsValue;
 use chrono::{DateTime, Utc};
 use serde_wasm_bindgen::from_value;
 
-use crate::dto::{FilterUserDto, LoginUserDto, RegisterUserDto, UnbanUserDto, UserData, UserListResponseDto, UserLoginResponseDto, WarnUserDto};
+use crate::dto::{FilterUserDto, LoginUserDto, RegisterUserDto, UnbanUserDto, UserData, UserListResponseDto, UserLoginResponseDto, UserPmsResponseDto, WarnUserDto};
 
 use crate::bind::{get, post, put, set_cookie};
 
@@ -124,4 +124,21 @@ pub async fn user_list(page: Option<usize>, limit: Option<usize>) -> Result<User
     }
     let users = get(&addr).await?;
     Ok(UserListResponseDto::from(users))
+}
+
+pub async fn user_pms(page: Option<usize>, limit: Option<usize>) -> Result<UserPmsResponseDto, JsValue> {
+    let mut addr = "/users/list".to_string();
+    let mut params = String::new();
+    if let Some(page) = page {
+        params.push_str(&format!("&page={}",page));
+    }
+    if let Some(limit) = limit {
+        params.push_str(&format!("&limit={}", limit));
+    }
+    if !params.is_empty() {
+        addr.push('?');
+        addr.push_str(&params);
+    }
+    let users = get(&addr).await?;
+    Ok(UserPmsResponseDto::from(users))
 }

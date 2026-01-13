@@ -36,7 +36,6 @@ pub fn Editor(props: &Props) -> Html {
         let safe_html = clean(&*unsafe_html);
         let s_c = s_c.clone();
         let e_c = e_c.clone();
-        crate::c_log!("SUBMIT: {:?}", post_id);
         match post_id {
             None => { // New post
                 wasm_bindgen_futures::spawn_local(async move {

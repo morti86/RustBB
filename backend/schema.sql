@@ -125,6 +125,18 @@ CREATE TABLE forum.posts (
 );
 -- ddl-end --
 ALTER TABLE forum.posts OWNER TO postgres;
+
+CREATE TABLE forum.reactions (
+	id BIGSERIAL PRIMARY KEY,
+	post_id int8 NOT NULL,
+	user_id uuid NOT NULL,
+	r_type VARCHAR(20));
+ALTER TABLE forum.reactions OWNER TO postgres;
+ALTER TABLE forum.reactions ADD CONSTRAINT reaction_author FOREIGN KEY (user_id)
+REFERENCES forum.users (id) MATCH SIMPLE
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
 -- ddl-end --
 
 -- object: forum.sections_allowed | type: TABLE --
