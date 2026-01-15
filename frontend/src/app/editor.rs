@@ -142,7 +142,7 @@ pub fn Editor(props: &Props) -> Html {
                     />
                 <input 
                     type="submit" 
-                    value="Submit" 
+                    value={t!("submit")} 
                     class="px-4 py-2 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-4"
                     disabled={logged_out}
                     />

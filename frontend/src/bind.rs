@@ -75,6 +75,34 @@ pub async fn get(url: &str) -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen]
+pub async fn get_p(url: &str, body: JsValue) -> Result<JsValue, JsValue> {
+    let opts = RequestInit::new();
+    opts.set_method("GET");
+
+    let headers = Headers::new()?;
+    headers.set("Content-Type", "application/json")?;
+    opts.set_credentials(web_sys::RequestCredentials::Include);
+    opts.set_body(&body);
+    
+    let url = format!("{}{}", ADDR, url);
+    let request = Request::new_with_str_and_init(&url, &opts)
+        .map_err(|e| JsValue::from_str(&format!("Request creation failed: {:?}", e)))?;
+    let window = web_sys::window()
+        .expect("FE002: no window ^o.O^");
+    let promise = window.fetch_with_request(&request);
+    let response = wasm_bindgen_futures::JsFuture::from(promise).await?;
+    let response: Response = response.into();
+
+    if !response.ok() {
+        return Err(format!("HTTP error: {}", response.status()).into());
+    }
+    
+    let json = wasm_bindgen_futures::JsFuture::from(response.json()?).await?;
+    Ok(json)
+}
+
+
+#[wasm_bindgen]
 pub async fn post(url: &str, body: JsValue) -> Result<JsValue, JsValue> {
     let opts = RequestInit::new();
     opts.set_method("POST");

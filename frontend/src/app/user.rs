@@ -20,15 +20,33 @@ pub fn User(props: &Props) -> Html {
     let user = use_state(|| None::<UserData>);
     let loaded = use_state(|| false);
     let banned = use_state(|| false);
+    let ctx = use_context::<crate::UserContext>()
+        .expect("Expected context");
     
     let u = user.clone();
     let l_c = loaded.clone();
     let b_c = banned.clone();
     let u_c = user_id.clone();
+    let c_c = ctx.clone();
     use_effect(|| {
         wasm_bindgen_futures::spawn_local(async move {
+            let c_c = c_c.clone();
             if !u_c.is_empty() && !*l_c {
-                if let Some(user_data) = cache.borrow().get(&*u_c) {
+                if let Some(fud) = &c_c.user {
+                    let user_data = UserData {
+                        id: fud.id.clone(),
+                        name: fud.name.clone(),
+                        email: fud.email.clone(),
+                        verified: fud.verified,
+                        role: fud.role.clone(),
+                        avatar: fud.avatar.clone(),
+                        banned: Some(fud.is_banned()),
+                        ..Default::default()
+                    };
+                    b_c.set(fud.is_banned());
+                    u.set(Some(user_data));
+                    l_c.set(true);
+                } else if let Some(user_data) = cache.borrow().get(&*u_c) {
                     let b = user_data.is_banned();
                     u.set(Some(user_data.clone()));
                     b_c.set(b);

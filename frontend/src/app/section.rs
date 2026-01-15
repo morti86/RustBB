@@ -105,7 +105,7 @@ pub fn Section(props: &Props) -> Html {
             }}
         }
         <div class="space-x-2">
-            <button id="next_page" onclick={on_next_page} disabled={!*is_some} >{t!("next")}</button>
+            <button id="next_page" onclick={on_next_page} disabled={!*is_some || topic_list.len() < (*limit).unwrap_or(10)} >{t!("next")}</button>
             <button id="first_page" onclick={on_start_page} disabled={(*page).is_none()} >{t!("firstp")}</button>
         </div>
 

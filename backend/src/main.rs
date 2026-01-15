@@ -162,24 +162,24 @@ async fn main() -> Result<()> {
         .allow_credentials(true)
         .allow_methods([Method::GET, Method::POST,Method::PUT,Method::DELETE]);
     
-    let governor_conf = Arc::new(
+    /*let governor_conf = Arc::new(
         GovernorConfigBuilder::default()
-            .per_second(15)
-            .burst_size(30)
+            .per_second(1)
+            .burst_size(15)
             .finish()
             .unwrap(),
-    );
+    );*/
 
-    let governor_limiter = governor_conf.limiter().clone();
-    let interval = tokio::time::Duration::from_secs(60);
+    //let governor_limiter = governor_conf.limiter().clone();
+    //let interval = tokio::time::Duration::from_secs(60);
     // a separate background task to clean up
-    tokio::spawn(async move {
+    /*tokio::spawn(async move {
         loop {
             tokio::time::sleep(interval).await;
             tracing::info!("rate limiting storage size: {}", governor_limiter.len());
             governor_limiter.retain_recent();
         }
-    });
+    });*/
 
     let db_client = DBClient::new(pool);
 
@@ -193,7 +193,7 @@ async fn main() -> Result<()> {
 
     let a = Arc::new(app_state.clone());
     let app = create_router(a)
-        .layer(GovernorLayer::new(governor_conf))
+        //.layer(GovernorLayer::new(governor_conf))
         .layer(cors)
         .with_state(app_state);
 
@@ -226,3 +226,4 @@ async fn main() -> Result<()> {
     
     Ok(())
 }
+

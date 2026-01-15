@@ -5,7 +5,8 @@ use chrono::{DateTime, Utc};
 use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::UnwrapThrowExt;
 
-use crate::{bind::{delete, get, post, put}, c_log, dto::{CreateSectionDto, CreateThreadDto, DeletePostDto, GetSectionResponseDto, GetSectionsResponseDto, GetThreadResponseDto, ReplyThreadDto, Section, ThreadListItemDto, UpdatePostDto, UpdateThreadDto}};
+use crate::{bind::{delete, get, get_p, post, put}, c_log, 
+    dto::{AddReactionDto, CreateSectionDto, CreateThreadDto, DeletePostDto, GetReactionsDto, GetSectionResponseDto, GetSectionsResponseDto, GetThreadResponseDto, PostReactionsList, ReplyThreadDto, Resp, Section, ThreadListItemDto, UpdatePostDto, UpdateThreadDto}};
 
 pub async fn get_sections() -> Result<Vec<Section>, JsValue> {
     let sections = get("/forum/list").await?;
@@ -111,14 +112,46 @@ pub async fn delete_post(post_id: i64) -> Result<(), JsValue> {
 }
 
 pub async fn create_section(dto: &CreateSectionDto) -> Result<(), JsValue> {
-    //let dto = CreateSectionDto {
-    //    name: name.to_string(),
-    //    description: description.to_string(),
-    //    allowed_for: allowed_for.to_vec(),
-    //};
     let body = serde_json::to_string(dto)
         .unwrap_throw();
 
     put("/forum/section/add", JsValue::from_str(body.as_str())).await?;
     Ok(())
+}
+
+pub async fn add_reaction(post_id: Option<i64>, thread_id: i64, r_type: &str) -> Result<bool, JsValue> {
+    let dto = AddReactionDto {
+        post_id,
+        thread_id,
+        r_type: r_type.to_string(),
+    };
+
+    let body = serde_json::to_string(&dto)
+        .unwrap_throw();
+
+    let r = post("/forum/post/reaction", JsValue::from_str(body.as_str())).await?;
+    let resp = Resp::from(r);
+    let result = resp.message != String::from("0");
+
+    Ok(result)
+}
+
+pub async fn get_reactions(post_id: Option<i64>, thread_id: i64) -> Result<PostReactionsList, JsValue> {
+    let mut addr = format!("/forum/post/reactions");
+    
+    let mut params = String::new();
+    if let Some(post_id) = post_id {
+        params.push_str(&format!("&post_id={}",post_id));
+    }
+    params.push_str(&format!("&thread_id={}", thread_id));
+    if !params.is_empty() {
+        addr.push('?');
+        addr.push_str(&params);
+    }
+
+    c_log!("rc_list");
+    let r = get(&addr).await?;
+    let response = PostReactionsList::from(r);
+
+    Ok(response)
 }

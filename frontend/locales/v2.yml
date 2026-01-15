@@ -93,3 +93,9 @@ msgs:
 nothr:
   en: "no threads"
   pl: "brak wątków"
+submit:
+  en: "submit"
+  pl: "dodaj"
+banned:
+  en: "You have been banned"
+  pl: "Zostałeś zbanowany"

@@ -156,6 +156,21 @@ pub struct ActiveUsersDto {
 
 #[derive(Serialize, Deserialize)]
 pub struct PostReactionsList {
-    pub post_id: i64,
+    pub thread_id: i64,
+    pub post_id: Option<i64>,
     pub reactions: Vec<PostReaction>,
+}
+
+#[derive(Serialize, Deserialize, Validate)]
+pub struct GetReactionsDto {
+    #[validate(range(min=0))]
+    pub thread_id: i64,
+    pub post_id: Option<i64>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AddReactionDto {
+    pub thread_id: i64,
+    pub post_id: Option<i64>,
+    pub r_type: String,
 }

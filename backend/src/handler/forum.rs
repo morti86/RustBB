@@ -49,6 +49,13 @@ pub fn forum_handler() -> Router<AppState> {
             .layer(from_fn(is_banned))
             .layer(from_fn(auth))
             )
+        .route("/post/reaction", post(add_reaction)
+            .layer(from_fn(is_banned))
+            .layer(from_fn(auth))
+            )
+        .route("/post/reactions", get(get_reactions)
+            .layer(from_fn(auth))
+            )
         .route("/active", get(list_active))
         .route("/upload_image", post(upload_image)
             .layer(from_fn(is_banned))
@@ -314,6 +321,55 @@ pub async fn list_active(Extension(app_state): Extension<Arc<AppState>>) -> Foru
         ActiveUsersDto { count: active.len(), users: active }
     ))
 }
+
+pub async fn add_reaction(Extension(app_state): Extension<Arc<AppState>>,
+    Extension(user): Extension<JWTAuthMiddeware>,
+    Json(body): Json<forum::AddReactionDto>) -> ForumResult<impl IntoResponse> {
+    let user = &user.user;
+    let user_id = uuid::Uuid::parse_str(&user.id.to_string()).unwrap();
+    app_state.update_session(&user_id)?;
+    app_state.db_client.update_user_activity(user_id).await?;
+
+    let n = app_state.db_client.add_reaction(&body.r_type, body.thread_id, body.post_id, &user_id).await?;
+
+    let response = forum::Response {
+        status: "success",
+        message: format!("{}", n),
+    };
+
+    Ok(Json(response))
+}
+
+pub async fn get_reactions(
+    Query(query_params): Query<forum::GetReactionsDto>,
+    Extension(app_state): Extension<Arc<AppState>>,
+    Extension(user): Extension<JWTAuthMiddeware>,
+) -> ForumResult<impl IntoResponse> {
+    query_params.validate()?;
+
+    let user = &user.user;
+    let user_id = uuid::Uuid::parse_str(&user.id.to_string()).unwrap();
+
+    app_state.update_session(&user_id)?;
+    app_state.db_client.update_user_activity(user_id).await?;
+
+    let reactions = app_state.db_client.post_reactions(
+        query_params.thread_id,
+        query_params.post_id,
+        Some(user_id),
+    ).await?;
+
+    tracing::debug!("{:?}", reactions);
+
+    let response = forum::PostReactionsList {
+        thread_id: query_params.thread_id,
+        post_id: query_params.post_id,
+        reactions,
+    };
+
+    Ok(Json(response))
+}
+
 /// Upload image for posts
 /// POST /forum/upload_image
 /// Requires authentication

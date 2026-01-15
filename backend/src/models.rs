@@ -173,11 +173,10 @@ pub struct PrivateMessage {
     pub content: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PostReaction {
-    pub id: i64,
-    pub post_id: i64,
-    pub user_id: uuid::Uuid,
     pub r_type: String,
+    pub count: i64,
+    pub user_clicked: bool,
 }
 

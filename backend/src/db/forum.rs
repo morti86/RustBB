@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use uuid::Uuid;
 
-use crate::{error::ForumResult, models::{ChatPost, Post, Section, Thread, UserRole}};
+use crate::{error::ForumResult, models::{ChatPost, Post, PostReaction, Section, Thread, UserRole}};
 
 #[async_trait]
 pub trait ForumExt {
@@ -29,6 +29,8 @@ pub trait ForumExt {
     async fn delete_post(&self, post_id: i64) -> ForumResult<()>;
     async fn get_post_author(&self, t_id: i64) -> ForumResult<Option<Uuid>>;
     async fn posts_since(&self, post_id: i64) -> ForumResult<i64>;
+    async fn add_reaction(&self, reaction: &str, thread_id: i64, post_id: Option<i64>, user_id: &Uuid) -> ForumResult<u64>;
+    async fn post_reactions(&self, thread_id: i64, post_id: Option<i64>, user_id: Option<uuid::Uuid>) -> ForumResult<Vec<PostReaction>>;
 }
 
 #[async_trait]
@@ -316,4 +318,87 @@ impl ForumExt for crate::db::DBClient {
 
         Ok(res.count.unwrap_or(-1))
     }
+
+    async fn add_reaction(&self, reaction: &str, thread_id: i64, post_id: Option<i64>, user_id: &Uuid) -> ForumResult<u64> {
+        let r = match post_id {
+            Some(post_id) => {
+                sqlx::query!(r#"
+                    INSERT INTO forum.reactions (post_id, thread_id, r_type, user_id)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (thread_id, r_type, user_id) where post_id is null do nothing"#, post_id, thread_id, reaction, user_id)
+                    .execute(&self.pool)
+                    .await?
+                    .rows_affected()
+            }
+            None => {
+                sqlx::query!(r#"
+                    INSERT INTO forum.reactions (thread_id, r_type, user_id)
+                    VALUES ($1, $2, $3)
+                    ON CONFLICT (post_id, thread_id, r_type, user_id) where post_id is not null DO NOTHING"#, thread_id, reaction, user_id)
+                    .execute(&self.pool)
+                    .await?
+                    .rows_affected()
+            }
+        };
+        Ok(r)
+    }
+
+    async fn post_reactions(&self, thread_id: i64, post_id: Option<i64>, user_id: Option<uuid::Uuid>) -> ForumResult<Vec<PostReaction>> {
+        // Get all reactions for this thread/post combination
+        tracing::debug!("**** UserId: {:?}", user_id);
+        let reactions = sqlx::query!(
+            r#"
+            SELECT r_type, COUNT(*) as count
+            FROM forum.reactions
+            WHERE thread_id = $1 AND (post_id = $2 OR ($2 IS NULL AND post_id IS NULL))
+            GROUP BY r_type
+            ORDER BY r_type
+            "#,
+            thread_id,
+            post_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        // Get user's reactions if user_id is provided
+        let user_reactions = if let Some(user_id) = user_id {
+            let ur = sqlx::query!(
+                r#"
+                SELECT r_type
+                FROM forum.reactions
+                WHERE thread_id = $1 AND (post_id = $2 OR ($2 IS NULL AND post_id IS NULL)) AND user_id = $3
+                "#,
+                thread_id,
+                post_id,
+                user_id
+            )
+            .fetch_all(&self.pool)
+            .await?
+            .into_iter()
+            .filter_map(|r| r.r_type) // Filter out NULL r_type values
+            .collect::<std::collections::HashSet<_>>();
+            tracing::debug!("UR: {:?}", ur);
+
+            ur
+        } else {
+            std::collections::HashSet::new()
+        };
+
+        // Convert to PostReaction structs
+        let result = reactions
+            .into_iter()
+            .filter_map(|r| {
+                // Skip reactions with NULL r_type
+                r.r_type.map(|r_type| PostReaction {
+                    r_type: r_type.clone(),
+                    count: r.count.unwrap_or(0) as i64,
+                    user_clicked: user_reactions.contains(&r_type),
+                })
+            })
+            .collect();
+
+        Ok(result)
+    }
 }
+
+

@@ -12,3 +12,5 @@ pub mod inbox;
 mod user;
 mod editor;
 mod lang_picker;
+mod reaction;
+mod post;

@@ -4,7 +4,7 @@ use web_sys::Element;
 use yew::prelude::*;
 use wasm_bindgen::UnwrapThrowExt;
 use yew_router::hooks::use_navigator;
-use crate::{dto::{Post, Thread, UserData}, forum::{delete_post, edit_thread, get_thread, new_thread}};
+use crate::{app::reaction::Reaction, dto::{Post, PostReactionsList, Thread, UserData}, forum::{delete_post, edit_thread, get_thread, new_thread}};
 use super::user::User;
 use super::editor::Editor;
 use wasm_bindgen::JsCast;
@@ -155,6 +155,7 @@ pub fn Topic(props: &Props) -> Html {
             wasm_bindgen_futures::spawn_local(async move {
                 let th = get_thread(id, Some(*pg_c), Some(*limit)).await
                     .unwrap_throw();
+
                 m_c.set(th.info);
                 p_c2.set(th.posts);
                 l_c.set(true);
@@ -188,6 +189,7 @@ pub fn Topic(props: &Props) -> Html {
                     <div class="col-span-5 grid grid-cols-1">
                         <span class="text-xl text-cyan-200">{&meta.title}</span>
                         <span class="text-zinc-400">{&meta.content}</span>
+                        {if ctx.is_some() { html! {<Reaction post={None} thread={meta.id}/>} } else { html! {""} } }
                     </div>
                     {if ctx.is_mod() || ctx.is_admin() || ctx.id() == meta.author {
                         html! { {""} }
@@ -231,6 +233,8 @@ pub fn Topic(props: &Props) -> Html {
                                         } else {
                                             html! {""}
                                         }}</span>
+                                        {if ctx.is_some() { html! {<Reaction post={p.id} thread={meta.id}/>} } else { html! {""} } }
+
                                         <span class="text-zinc-700 text-xs">{p.created_at.format(crate::DATEFORMAT).to_string()}</span>
                                     </div>
                             </div>
@@ -239,7 +243,7 @@ pub fn Topic(props: &Props) -> Html {
                 })}
                 {
                     if ctx.banned() {
-                        html! { <span class="text-weight-bold text-red-500">{"You have been banned"}</span> }
+                        html! { <span class="text-weight-bold text-red-500">{t!("banned")}</span> }
                     } else if !ctx.is_some() {
                         html! { {""} }
                     } else {

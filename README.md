@@ -9,12 +9,12 @@ Still a WIP
 - JWT
 - Sqlx (PostgreSQL)
 
-### frontend: 50% done
+### frontend: 60% done
 - Yew
 - Web-Sys
 - WASM Bindgen
 
 TODO:
 - a proper Rich text editor
-- emoji manager allowing inserting a chosen emoji
-- possibility for admins to add custom emoji sets
+- inbox for private messages
+- better styling

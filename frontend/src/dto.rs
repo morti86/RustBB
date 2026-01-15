@@ -410,3 +410,51 @@ impl From<JsValue> for ImageUploadResponse {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct AddReactionDto {
+    pub thread_id: i64,
+    pub post_id: Option<i64>,
+    pub r_type: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq)]
+pub struct PostReactionsList {
+    pub thread_id: i64,
+    pub post_id: Option<i64>,
+    pub reactions: Vec<PostReaction>,
+}
+
+impl PostReactionsList {
+    pub fn is_empty(&self) -> bool {
+        self.reactions.is_empty()
+    }
+}
+
+impl From<JsValue> for PostReactionsList {
+    fn from(value: JsValue) -> Self {
+        from_value(value)
+            .unwrap_throw()
+    }
+}
+
+
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq)]
+pub struct PostReaction {
+    pub r_type: String,
+    pub count: i64,
+    pub user_clicked: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetReactionsDto {
+    pub thread_id: i64,
+    pub post_id: Option<i64>,
+}
+
+impl From<JsValue> for GetReactionsDto {
+    fn from(value: JsValue) -> Self {
+        from_value(value)
+            .unwrap_throw()
+    }
+}
+

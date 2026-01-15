@@ -36,6 +36,7 @@ mod text;
 static ADDR: &str = "http://localhost:8080";
 static DATEFORMAT: &str = "%Y-%m-%d %H:%M";
 static DATEFORMAT_SIMPLE: &str = "%Y-%m-%d";
+static REACTIONS: [&str;9] = ["😁", "😂", "😍", "😡", "💩", "☠", "🐭", "😝", "😺"];
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct Ctx {
@@ -211,7 +212,7 @@ fn App() -> Html {
                         Route::UserList => html! { <UserList/> },
                         Route::Section {id} => html! { <Section id={id} /> },
                         Route::OAuthCallback => html! { <OAuthCallback/> },
-                        Route::Messages => html! { <Inbox user_cache={u_c.clone()}/> },
+                        Route::Messages => html! { <Inbox/> },
                         Route::NotFound => html! { <h1>{"404 not"}</h1> },
                     }
                 }} />
