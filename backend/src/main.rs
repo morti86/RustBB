@@ -161,27 +161,8 @@ async fn main() -> Result<()> {
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE])
         .allow_credentials(true)
         .allow_methods([Method::GET, Method::POST,Method::PUT,Method::DELETE]);
-    
-    let governor_conf = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_second(1)
-            .burst_size(10)
-            .finish()
-            .unwrap(),
-    );
-
-    let governor_limiter = governor_conf.limiter().clone();
-    let interval = tokio::time::Duration::from_secs(60);
-    tokio::spawn(async move {
-        loop {
-            tokio::time::sleep(interval).await;
-            tracing::info!("rate limiting storage size: {}", governor_limiter.len());
-            governor_limiter.retain_recent();
-        }
-    });
 
     let db_client = DBClient::new(pool);
-
     let app_state = AppState {
         oauth_service: OAuthService::from_env(),
         env: config.clone(),
@@ -189,13 +170,36 @@ async fn main() -> Result<()> {
         key: Key::generate(),
         active_users: Arc::new(DashMap::new()),
     };
-
     let a = Arc::new(app_state.clone());
-    let app = create_router(a)
-        .layer(GovernorLayer::new(governor_conf))
-        .layer(cors)
-        .with_state(app_state);
 
+    let app = if config.rtlim {
+        let governor_conf = Arc::new(
+            GovernorConfigBuilder::default()
+                .per_second(config.rtlim_per_second)
+                .burst_size(config.rtlim_burst)
+                .finish()
+                .unwrap(),
+        );
+
+        let governor_limiter = governor_conf.limiter().clone();
+        let interval = tokio::time::Duration::from_secs(60);
+        tokio::spawn(async move {
+            loop {
+                tokio::time::sleep(interval).await;
+                tracing::info!("rate limiting storage size: {}", governor_limiter.len());
+                governor_limiter.retain_recent();
+            }
+        });
+        create_router(a)
+            .layer(GovernorLayer::new(governor_conf))
+            .layer(cors)
+            .with_state(app_state)
+    } else { 
+        create_router(a)
+            .layer(cors)
+            .with_state(app_state)
+    };
+    
     // Start server
     let app_url = env::var("HOST_URL").unwrap_or("127.0.0.1".to_string());
    

@@ -1,10 +1,11 @@
 use std::{collections::HashMap, rc::Rc};
-
+use ammonia::clean;
+use pulldown_cmark::{Parser, Options, html::push_html};
 use web_sys::Element;
 use yew::prelude::*;
 use wasm_bindgen::UnwrapThrowExt;
 use yew_router::hooks::use_navigator;
-use crate::{app::reaction::Reaction, dto::{Post, PostReactionsList, Thread, UserData}, forum::{delete_post, edit_thread, get_thread, new_thread}};
+use crate::{app::reaction::Reaction, dto::{Post, Thread, UserData}, forum::{delete_post, edit_thread, get_thread, new_thread}};
 use super::user::User;
 use super::editor::Editor;
 use wasm_bindgen::JsCast;
@@ -34,13 +35,18 @@ pub fn Topic(props: &Props) -> Html {
     let anon = ctx.is_none();
     let p_c = posts.clone();
     let l_c = loaded.clone();
-
+    let m_c = meta.clone();
     use_effect_with(l_c, move |_| {
+        let window = web_sys::window().expect("global window does not exists");
+        let document = window.document().expect("expecting a document on window");
+        let element_id = format!("thread-meta-content");
+        let val = document.get_element_by_id(&element_id)
+            .expect("No element id!");
+        val.set_inner_html(&m_c.content);
+
         p_c.iter().for_each(|p| {
             let id = p.id;
             let element_id = format!("post-{}", id);
-            let window = web_sys::window().expect("global window does not exists");
-            let document = window.document().expect("expecting a document on window");
             let val = document.get_element_by_id(&element_id)
                 .expect("No element id!");
             val.set_inner_html(&p.content);
@@ -72,11 +78,15 @@ pub fn Topic(props: &Props) -> Html {
         let n_c = navigator.clone();
         let n_th_submit = Callback::from(move |e: SubmitEvent| {
             let meta = m_c.clone();
+            let md_parse = Parser::new_ext(meta.content.as_str(), Options::empty());
+            let mut unsafe_html = String::new();
+            push_html(&mut unsafe_html, md_parse);
+            let safe_html = clean(&*unsafe_html);
             e.prevent_default();
             if id > 0 {
                 wasm_bindgen_futures::spawn_local(async move {
                     let meta = (*meta).clone();
-                    if let Err(e) = edit_thread(id, &meta.title, &meta.content).await {
+                    if let Err(e) = edit_thread(id, &meta.title, &safe_html).await {
                         crate::c_error!("{:?}", e);
                     }
                 });
@@ -84,7 +94,7 @@ pub fn Topic(props: &Props) -> Html {
                 let n_c = n_c.clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     let meta = (*meta).clone();
-                    if let Err(e) = new_thread(&meta.title, &meta.content, s_id, vec![]).await {
+                    if let Err(e) = new_thread(&meta.title, &safe_html, s_id, vec![]).await {
                         crate::c_error!("{:?}", e);
                     }
                     n_c.push(&crate::Route::Section { id: s_id });
@@ -188,7 +198,7 @@ pub fn Topic(props: &Props) -> Html {
                     </div>
                     <div class="col-span-5 grid grid-cols-1">
                         <span class="text-xl text-cyan-200">{&meta.title}</span>
-                        <span class="text-zinc-400">{&meta.content}</span>
+                        <span class="text-zinc-400" id="thread-meta-content">/* HTML */</span>
                         {if ctx.is_some() { html! {<Reaction post={None} thread={meta.id}/>} } else { html! {""} } }
                     </div>
                     {if ctx.is_mod() || ctx.is_admin() || ctx.id() == meta.author {

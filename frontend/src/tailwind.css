@@ -12,4 +12,7 @@
 	button {
 		@apply px-4 py-1 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors disabled:bg-zinc-900 hover:disabled:bg-zinc-900 disabled:text-zinc-600;
 	}
+	code {
+		@apply text-xs text-pink-900;
+	}
 }
