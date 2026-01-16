@@ -122,6 +122,17 @@ pub fn UserPage(props: &Props) -> Html {
         b_c.set(value);
     });
 
+    let on_role_change = {
+        let u_c = user_data.clone();
+        Callback::from(move |e: web_sys::Event| {
+            let input: web_sys::HtmlInputElement = e.target_unchecked_into();
+            let value = input.value();
+            let mut c_c = (*u_c).clone();
+            c_c.role = value;
+            u_c.set(c_c);
+        })
+    };
+
     let b_c = ban_comment.clone();
     let on_comment_change = Callback::from(move |e: InputEvent| {
         let input: web_sys::HtmlInputElement = e.target_unchecked_into();
@@ -297,7 +308,16 @@ pub fn UserPage(props: &Props) -> Html {
                         {display_thing!(id, user.id.clone())}
                         {display_thing!(name, user.name.clone(), on_name_input)}
                         {display_thing!(email, user.email.clone(), on_email_input, "email")}
-                        {display_thing!(role, user.role.clone())}
+                        <div class="flex flex-auto p-2 space-x-4 rounded-l">
+                            <div class="flex-none w-20">{t!("role")}</div>
+                            <div class="flex-1 w-80">
+                                <select id="user-role-sel" multiple={false} class="bg-black/0" onchange={on_role_change.clone()} disabled={!ctx.is_admin()}>
+                                    <option value="Admin" selected={user.role.eq("Admin")}>{t!{"adms"}}</option>
+                                    <option value="Mod" selected={user.role.eq("Mod")}>{t!{"mods"}}</option>
+                                    <option value="User" selected={user.role.eq("User")}>{t!{"users"}}</option>
+                                </select>
+                            </div>
+                        </div>
                         {display_thing!(description, user.description.clone().unwrap_or_default(), on_description_input)}
                         {display_thing!(facebook, user.facebook.clone().unwrap_or_default(), on_facebook_input)}
                         {display_thing!(discord, user.discord.clone().unwrap_or_default(), on_discord_input)}

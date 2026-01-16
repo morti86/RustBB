@@ -114,3 +114,6 @@ recver:
 contt:
   en: "content"
   pl: "treść"
+role:
+  en: "role"
+  pl: "rola"

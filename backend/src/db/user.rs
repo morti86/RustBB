@@ -419,7 +419,7 @@ impl UserExt for crate::db::DBClient {
         user_id: Uuid, name: &str, email: &str, role: UserRole,
         description: Option<&str>, avatar: Option<&str>, facebook: Option<&str>, discord: Option<&str>, x_id: Option<&str>)
         -> ForumResult<()>{
-
+        tracing::debug!("role={:?}", role);
         sqlx::query!(
             r#"
             UPDATE forum.users

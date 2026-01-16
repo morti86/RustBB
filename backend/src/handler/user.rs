@@ -226,7 +226,7 @@ pub async fn update_user_data(
 
     let user_role = UserRole::from_str(&body.role)?;
 
-    app_state.db_client.update_user_data(user_id, 
+    app_state.db_client.update_user_data(body_uid, 
         &body.name, 
         &body.email, 
         user_role, 
