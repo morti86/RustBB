@@ -79,7 +79,9 @@ pub fn Reaction(props: &Props) -> Html {
                 match reaction_data {
                     Some(reaction_data) => {
                         html! { 
-                            <button id={format!("{}-rc-{}", rc, post_id_n)} onclick={on_click.clone()} class="bg-zinc-950/20 disabled:bg-opacity-0 hover:bg-pink-800/40 disabled:opacity-40 disabled:hover:bg-opacity-0" disabled={reaction_data.user_clicked}>
+                            <button id={format!("{}-rc-{}", rc, post_id_n)} onclick={on_click.clone()} 
+                                class="bg-zinc-950/20 disabled:bg-opacity-0 hover:bg-pink-800/40 disabled:opacity-40 disabled:hover:bg-opacity-0" 
+                                disabled={reaction_data.user_clicked}>
                                 {format!("{} {}", rc, reaction_data.count)}
                             </button>
                         }

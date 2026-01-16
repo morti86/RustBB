@@ -1,7 +1,9 @@
+use wasm_bindgen::JsCast;
+use web_sys::Element;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::{dto::FilterUserDto, user::user_list};
+use crate::{app::outbox::Outbox, dto::FilterUserDto, user::user_list};
 
 #[component]
 pub fn UserList() -> Html {
@@ -40,7 +42,6 @@ pub fn UserList() -> Html {
             page.set(None);
         })
     };
-
 
     html! {
         <div class="grid p-2 grid-cols-1 space-y-2">

@@ -16,7 +16,7 @@ thiserror = "2.0.17"
 url = "2.5.7"
 wasm-bindgen = { version = "0.2.106", features = ["serde", "serde_json", "serde-serialize"] }
 wasm-bindgen-futures = "0.4.56"
-web-sys = { version = "0.3.83", features = ["Request", "RequestInit", "RequestMode", "Response", "Window", "HtmlDocument", "File", "FileReader", "FileList", "HtmlButtonElement", "HtmlSelectElement", "XmlHttpRequest"] }
+web-sys = { version = "0.3.83", features = ["Request", "RequestInit", "RequestMode", "Response", "Window", "HtmlDocument", "File", "FileReader", "FileList", "HtmlButtonElement", "HtmlSelectElement", "XmlHttpRequest", "Event", "EventTarget"] }
 yew = { version = "0.22.0", features = ["serde","csr"] }
 yew-router = "0.19.0"
 infer = "0.19.0"

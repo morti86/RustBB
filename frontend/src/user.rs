@@ -3,7 +3,7 @@ use wasm_bindgen::JsValue;
 use chrono::{DateTime, Utc};
 use serde_wasm_bindgen::from_value;
 
-use crate::dto::{FilterUserDto, LoginUserDto, RegisterUserDto, UnbanUserDto, UserData, UserListResponseDto, UserLoginResponseDto, UserPmsResponseDto, WarnUserDto};
+use crate::dto::{FilterUserDto, LoginUserDto, RegisterUserDto, SendPmDto, UnbanUserDto, UserData, UserListResponseDto, UserLoginResponseDto, UserPmsResponseDto, WarnUserDto};
 
 use crate::bind::{get, post, put, set_cookie};
 
@@ -127,7 +127,7 @@ pub async fn user_list(page: Option<usize>, limit: Option<usize>) -> Result<User
 }
 
 pub async fn user_pms(page: Option<usize>, limit: Option<usize>) -> Result<UserPmsResponseDto, JsValue> {
-    let mut addr = "/users/list".to_string();
+    let mut addr = "/users/pms".to_string();
     let mut params = String::new();
     if let Some(page) = page {
         params.push_str(&format!("&page={}",page));
@@ -141,4 +141,16 @@ pub async fn user_pms(page: Option<usize>, limit: Option<usize>) -> Result<UserP
     }
     let users = get(&addr).await?;
     Ok(UserPmsResponseDto::from(users))
+}
+
+pub async fn send_pm(to: &str, content: &str) -> Result<(), JsValue> {
+    let dto = SendPmDto {
+        recipient_id: to.to_string(),
+        content: content.to_string(),
+    };
+    let body = serde_json::to_string(&dto)
+        .expect("SP");
+
+    let _res = post("/users/message", JsValue::from_str(&body)).await?;
+    Ok(())
 }

@@ -137,6 +137,12 @@ pub struct UnbanUserDto {
     pub uuid: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SendPmDto {
+    pub recipient_id: String,
+    pub content: String,
+}
+
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct UserData {
     pub id: String,
@@ -224,7 +230,9 @@ pub struct GetUserPmsDto {
 pub struct PrivateMessage {
     pub id: i64,
     pub author: Option<String>,
+    pub author_name: Option<String>,
     pub receiver: String,
+    pub receiver_name: Option<String>,
     pub content: String,
 }
 

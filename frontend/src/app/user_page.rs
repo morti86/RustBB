@@ -2,7 +2,7 @@ use web_sys::{HtmlInputElement, Response};
 use yew::prelude::*;
 use wasm_bindgen::{UnwrapThrowExt, JsCast};
 
-use crate::{bind::upload_file_with_fetch, c_log, dto::UserData, user::{unban_user, update_user, user, warn_user}};
+use crate::{app::outbox::Outbox, bind::upload_file_with_fetch, c_log, dto::UserData, user::{unban_user, update_user, user, warn_user}};
 
 macro_rules! display_thing {
     ($name:ident, $value:expr) => {
@@ -100,7 +100,7 @@ pub fn UserPage(props: &Props) -> Html {
     let error = use_state(String::new);
     let ctx = use_context::<crate::UserContext>()
         .expect("Expected context");
-
+    let hide_pm = use_state(|| false);
     let u_c = user_data.clone();
     on_input!(name, on_name_input, u_c);
     let u_c = user_data.clone();
@@ -262,6 +262,13 @@ pub fn UserPage(props: &Props) -> Html {
         u_c.set(u);
     });
 
+    let on_send = {
+        let h_c = hide_pm.clone();
+        Callback::from(move |_| {
+            h_c.set(true);
+        })
+    };
+
     let c_c = ctx.clone();
     let user = user_data.clone();
     if !*edit_mode && !*self_edit {
@@ -321,6 +328,9 @@ pub fn UserPage(props: &Props) -> Html {
                         class="px-3 py-1 bg-indigo-700 rounded-xl font-medium hover:bg-violet-600 transition-colors"
                         value="Update"/>
                 </form>
+                <div hidden={*hide_pm}>
+                    <Outbox on_send={on_send} send_to={user.id.clone()}/>
+                </div>
                 {if !*self_edit {
                     html! { 
                         <div>

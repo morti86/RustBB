@@ -403,10 +403,11 @@ impl UserExt for crate::db::DBClient {
        let offset = offset as i64;
 
        let r = sqlx::query_as!(PrivateMessage,
-            r#" SELECT pm.id,author,receiver,content,u.name as author_name 
+            r#" SELECT pm.id,author,receiver,content,a.name as author_name, r.name as receiver_name
                 FROM forum.private_messages pm
-                LEFT JOIN forum.users u ON u.id = pm.author
-                WHERE receiver = $1
+                LEFT JOIN forum.users a ON a.id = pm.author
+                LEFT JOIN forum.users r ON r.id = pm.receiver
+                WHERE receiver = $1 OR author = $1
                 LIMIT $2 OFFSET $3"#,
             user, limit, offset)
             .fetch_all(&self.pool)

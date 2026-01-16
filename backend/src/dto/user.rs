@@ -224,8 +224,8 @@ pub struct SendPmDto {
 
 #[derive(Debug, Serialize, Deserialize, Validate, Clone)]
 pub struct GetUserPmsDto {
-    pub page: u32,
-    pub limit: usize,
+    pub page: Option<u32>,
+    pub limit: Option<usize>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Validate, Clone)]

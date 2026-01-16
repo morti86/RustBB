@@ -373,27 +373,22 @@ impl ForumExt for crate::db::DBClient {
                 user_id
             )
             .fetch_all(&self.pool)
-            .await?
-            .into_iter()
-            .filter_map(|r| r.r_type) // Filter out NULL r_type values
-            .collect::<std::collections::HashSet<_>>();
-            tracing::debug!("UR: {:?}", ur);
-
+            .await?;
             ur
         } else {
-            std::collections::HashSet::new()
+            vec![]
         };
 
         // Convert to PostReaction structs
         let result = reactions
             .into_iter()
-            .filter_map(|r| {
-                // Skip reactions with NULL r_type
-                r.r_type.map(|r_type| PostReaction {
-                    r_type: r_type.clone(),
-                    count: r.count.unwrap_or(0) as i64,
-                    user_clicked: user_reactions.contains(&r_type),
-                })
+            .map(|r| {
+                let user_clicked = user_reactions.iter().find(|x| x.r_type.as_str() == r.r_type.as_str()).is_some();
+                PostReaction { 
+                    r_type: r.r_type, 
+                    count: r.count.unwrap_or_default(), 
+                    user_clicked,
+                }
             })
             .collect();
 

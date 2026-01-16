@@ -14,3 +14,4 @@ mod editor;
 mod lang_picker;
 mod reaction;
 mod post;
+mod outbox;

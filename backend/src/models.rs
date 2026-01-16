@@ -170,6 +170,7 @@ pub struct PrivateMessage {
     pub author: Option<uuid::Uuid>,
     pub author_name: Option<String>,
     pub receiver: uuid::Uuid,
+    pub receiver_name: Option<String>,
     pub content: String,
 }
 

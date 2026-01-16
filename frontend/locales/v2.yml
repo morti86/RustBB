@@ -99,3 +99,18 @@ submit:
 banned:
   en: "You have been banned"
   pl: "Zostałeś zbanowany"
+send:
+  en: "send"
+  pl: "wyślij"
+writem:
+  en: "write message"
+  pl: "napisz wiadomość"
+sender:
+  en: "sender"
+  pl: "nadawca"
+recver:
+  en: "receiver"
+  pl: "odbiorca"
+contt:
+  en: "content"
+  pl: "treść"

@@ -28,7 +28,6 @@ pub fn user_handler() -> Router<AppState> {
         .route("/{user_id}/posts", get(user_posts))
         .route("/{user_id}/threads", get(user_threads))
         .route("/{user_id}/warnings", get(user_warnings).layer(from_fn(auth)) )
-        .route("/message", post(send_pm).layer(from_fn(auth)) )
         .route("/unban", put(unban_user)
             .layer(admin_mod_only.clone()) 
             .layer(from_fn(auth))
@@ -37,7 +36,14 @@ pub fn user_handler() -> Router<AppState> {
             .layer(admin_mod_only)
             .layer(from_fn(auth))
         )
-        .route("/pms", get(get_pms).layer(from_fn(auth)) )
+        .route("/pms", get(get_pms)
+            .layer(from_fn(auth)) 
+            )
+        .route("/message", post(send_pm)
+            .layer(from_fn(is_banned))
+            .layer(from_fn(auth)) 
+            )
+
         .route("/avatar", post(upload_avatar))
 }
 
@@ -343,7 +349,7 @@ pub async fn send_pm(
 }
 
 pub async fn get_pms(
-    Path((page,limit)) : Path<(u32,usize)>,
+    Query(query_params): Query<user::GetUserPmsDto>,
     Extension(user): Extension<JWTAuthMiddeware>,
     Extension(app_state): Extension<Arc<AppState>>,
 ) -> ForumResult<impl IntoResponse> {
@@ -351,7 +357,11 @@ pub async fn get_pms(
     let user_id = uuid::Uuid::parse_str(&user.id.to_string()).unwrap();
 
     app_state.update_session(&user_id)?;
-    let pms = app_state.db_client.get_pms(user_id, page, limit)
+    let pms = app_state.db_client.get_pms(
+        user_id,
+        query_params.page.unwrap_or(1),
+        query_params.limit.unwrap_or(20)
+    )
         .await?;
 
     let response = user::UserPmsResponseDto { pms };
