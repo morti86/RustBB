@@ -7,6 +7,7 @@ use dotenv::dotenv;
 use tracing::{info, warn};
 use db::DBClient;
 use uuid::Uuid;
+use moka::future::Cache;
 use std::sync::Arc;
 use std::env;
 use axum::{
@@ -38,6 +39,7 @@ mod middleware;
 mod oauth;
 
 type TryResult<'a> = dashmap::try_result::TryResult<dashmap::mapref::one::RefMut<'a, Uuid, UserSession>>;
+type SharedCache = Arc<Cache<String, serde_json::Value>>;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
@@ -45,6 +47,7 @@ pub struct AppState {
     pub env: config::Config,
     pub db_client: DBClient,
     pub key: Key,
+    pub cache: SharedCache,
     pub active_users: Arc<DashMap<Uuid, UserSession>>,
 }
 
@@ -156,6 +159,13 @@ async fn main() -> Result<()> {
         }
     };
 
+    let cache: SharedCache = Arc::new(
+        Cache::builder()
+            .max_capacity(1000)
+            .time_to_live(std::time::Duration::from_secs(3600))
+            .build()
+    );
+
     let cors = CorsLayer::new()
         .allow_origin(AllowOrigin::mirror_request())
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE])
@@ -166,6 +176,7 @@ async fn main() -> Result<()> {
     let app_state = AppState {
         oauth_service: OAuthService::from_env(),
         env: config.clone(),
+        cache,
         db_client,
         key: Key::generate(),
         active_users: Arc::new(DashMap::new()),

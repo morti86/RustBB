@@ -168,6 +168,7 @@ pub fn SectionList() -> Html {
                             } else {
                                 html! {<p class="py-3 px-2 text-sm text-zinc-400">{"-"}</p>}
                             }}
+                            <p class="text-xs pl-5">{t!("thrs")}{section.threads.unwrap_or_default()}</p>
                         </div>
                         </Link<Route>>
                     }

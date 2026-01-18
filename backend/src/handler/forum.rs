@@ -190,11 +190,18 @@ pub async fn get_sections(
         app_state.db_client.update_user_activity(user_id).await?;
     }
 
+    if let Some(cached) = app_state.cache.get("sections").await {
+        return Ok(Json(cached));
+    }
+
     let sections = app_state.db_client.get_sections(user_id).await?;
 
     let response = forum::GetSectionsResponseDto { sections };
 
-    Ok(Json(response))
+    let json_value = serde_json::to_value(&response)?;
+    app_state.cache.insert(String::from("sections"), json_value.clone()).await;
+
+    Ok(Json(json_value))
 }
 
 pub async fn add_section(

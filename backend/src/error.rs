@@ -191,6 +191,12 @@ impl From<axum::http::Error> for ForumError {
     }
 }
 
+impl From<serde_json::Error> for ForumError {
+    fn from(value: serde_json::Error) -> Self {
+        Self::ServerError(value.to_string())
+    }
+}
+
 impl IntoResponse for ForumError {
     fn into_response(self) -> Response {
         match self {

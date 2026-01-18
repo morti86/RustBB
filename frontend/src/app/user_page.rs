@@ -1,6 +1,7 @@
 use web_sys::{HtmlInputElement, Response};
 use yew::prelude::*;
 use wasm_bindgen::{UnwrapThrowExt, JsCast};
+use yew_router::hooks::use_navigator;
 
 use crate::{app::outbox::Outbox, bind::upload_file_with_fetch, c_log, dto::UserData, user::{unban_user, update_user, user, warn_user}};
 
@@ -98,6 +99,7 @@ pub fn UserPage(props: &Props) -> Html {
     let ban_length = use_state_eq(|| 0);
     let ban_comment = use_state(String::new);
     let error = use_state(String::new);
+    let nav = use_navigator().unwrap();
     let ctx = use_context::<crate::UserContext>()
         .expect("Expected context");
     let hide_pm = use_state(|| false);
@@ -194,9 +196,11 @@ pub fn UserPage(props: &Props) -> Html {
     let e_c = error.clone();
     let on_submit = {
         let u_c = user_data.clone();
+        let nv_c = nav.clone();
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
             let current_user = (*u_c).clone();
+            let nv_c = nv_c.clone();
             e_c.set(String::new());
             let e_c = e_c.clone();
             wasm_bindgen_futures::spawn_local(async move {
@@ -208,6 +212,7 @@ pub fn UserPage(props: &Props) -> Html {
                     let err = format!("Error saving data [{}]: {}", status, es_str);
                     e_c.set(err);
                 }
+                nv_c.push(&crate::Route::Content);
             });
         })
     };

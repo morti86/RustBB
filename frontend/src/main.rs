@@ -146,7 +146,7 @@ fn App() -> Html {
     let user_cache = Rc::new( RefCell::new( HashMap::<String, dto::UserData>::new() ) );
 
     use_effect_with((), move |_| {
-        let lang = bind::get_ls("language")
+        let lang = bind::get_ls("lang")
             .unwrap_or(String::from("en"));
         rust_i18n::set_locale(&lang);
         wasm_bindgen_futures::spawn_local(async move {
@@ -166,7 +166,7 @@ fn App() -> Html {
     });
 
     let update_callback = Callback::from(move |lang: String| {
-        bind::set_ls("language",&lang);
+        bind::set_ls("lang",&lang);
         rust_i18n::set_locale(&lang);
         trigger.force_update();
     });

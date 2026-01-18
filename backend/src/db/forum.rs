@@ -126,10 +126,13 @@ impl ForumExt for crate::db::DBClient {
                                 ) THEN true
                                 ELSE false
                             END, false
-                        ) as "new_posts!: bool"
+                        ) as "new_posts!: bool",
+                        COUNT(t.id) as "threads?: i64"
                         FROM forum.sections s
                         CROSS JOIN forum.users u
+                        LEFT JOIN forum.threads t ON t.section = s.id
                         WHERE u.id = $1
+                        GROUP BY s.id, s.name, s.description, u.last_online
                     "#, user_id)
                     .fetch_all(&self.pool)
                     .await?;
@@ -139,8 +142,11 @@ impl ForumExt for crate::db::DBClient {
                 // For anonymous users, return false for new_posts for all sections
                 let r = sqlx::query_as!(Section,
                     r#" SELECT s.id, s.name, s.description,
-                        false as "new_posts!: bool"
+                        false as "new_posts!: bool",
+                        COUNT(t.id) as "threads?: i64"
                         FROM forum.sections s
+                        LEFT JOIN forum.threads t ON t.section = s.id
+                        GROUP BY s.id, s.name, s.description
                     "#)
                     .fetch_all(&self.pool)
                     .await?;

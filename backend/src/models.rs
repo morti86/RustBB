@@ -107,6 +107,7 @@ pub struct Section {
     pub name: String,
     pub description: Option<String>,
     pub new_posts: bool,
+    pub threads: Option<i64>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
