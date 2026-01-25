@@ -1,17 +1,37 @@
-use serde::{Serialize, Deserialize};
 use wasm_bindgen::JsValue;
-use web_sys::{Headers, RequestInit};
-use chrono::{DateTime, Utc};
-use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::UnwrapThrowExt;
 
-use crate::{bind::{delete, get, get_p, post, put}, c_log, 
-    dto::{AddReactionDto, CreateSectionDto, CreateThreadDto, DeletePostDto, GetReactionsDto, GetSectionResponseDto, GetSectionsResponseDto, GetThreadResponseDto, PostReactionsList, ReplyThreadDto, Resp, Section, ThreadListItemDto, UpdatePostDto, UpdateThreadDto}};
+use crate::dto::UpdateSectionDto;
+use crate::{bind::{delete, get, post, put}, c_log, 
+    dto::{AddReactionDto, CreateSectionDto, CreateThreadDto, DeletePostDto, DeleteSectionDto, DeleteThreadDto, GetSectionResponseDto, GetSectionsResponseDto, GetThreadResponseDto, PostReactionsList, ReplyThreadDto, Resp, Section, ThreadListItemDto, UpdatePostDto, UpdateThreadDto}};
 
 pub async fn get_sections() -> Result<Vec<Section>, JsValue> {
     let sections = get("/forum/list").await?;
     let response = GetSectionsResponseDto::from(sections);
     Ok(response.sections)
+}
+
+pub async fn delete_section(s_id: i32) -> Result<(), JsValue> {
+    let dto = DeleteSectionDto { s_id };
+
+    let body = serde_json::to_string(&dto)
+        .unwrap_throw();
+    delete("/forum/section/del", JsValue::from_str(body.as_str())).await?;
+
+    Ok(())
+}
+
+
+pub async fn edit_section(id: i32, desc: &str) -> Result<(), JsValue> {
+    let dto = UpdateSectionDto {
+        id,
+        description: desc.to_string(),
+    };
+    let body = serde_json::to_string(&dto)
+        .unwrap_throw();
+    post("/forum/section/edit", JsValue::from_str(body.as_str())).await?;
+
+    Ok(())
 }
 
 pub async fn get_topics(section_id: i64, page: Option<i32>, limit: Option<usize>) -> Result<Vec<ThreadListItemDto>, JsValue> {    
@@ -96,6 +116,15 @@ pub async fn new_thread(title: &str, content: &str, section: i64, hash_tags: Vec
         .unwrap_throw();
 
     post("/forum/threads/new", JsValue::from_str(body.as_str())).await?;
+
+    Ok(())
+}
+
+pub async fn delete_thread(thread_id: i64) -> Result<(), JsValue> {
+    let dto = DeleteThreadDto { thread_id };
+    let body = serde_json::to_string(&dto)
+        .unwrap_throw();
+    delete("/forum/threads", JsValue::from_str(body.as_str())).await?;
 
     Ok(())
 }

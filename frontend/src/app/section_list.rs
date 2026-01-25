@@ -2,7 +2,7 @@ use wasm_bindgen::UnwrapThrowExt;
 use web_sys::window;
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::{Route, dto::{CreateSectionDto, Section}, forum::{create_section, get_sections}};
+use crate::{Route, dto::{CreateSectionDto, Section}, forum::{create_section, delete_section, edit_section, get_sections}};
 
 #[component]
 pub fn SectionList() -> Html {
@@ -11,7 +11,8 @@ pub fn SectionList() -> Html {
     let loaded = use_state(|| false);
     let ctx = use_context::<crate::UserContext>()
         .expect("Expected context");
-
+    let navigator = use_navigator()
+        .expect("Where is navigator?");
 
     // Clone section_list before moving into async closure
     let sl_c = section_list.clone();
@@ -73,6 +74,62 @@ pub fn SectionList() -> Html {
             n_c_desc.set(Some(dto));
         }
     });
+
+    let on_sc_del = {
+        let n_c = navigator.clone();
+        Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            e.stop_propagation();
+            let input = e.target_unchecked_into::<web_sys::HtmlInputElement>();
+            let n_c = n_c.clone();
+            let id = input.id();
+            let id = &id[4..];
+
+            let window = web_sys::window().expect("no window exists");
+            let user_input = window.prompt_with_message(&t!("del_c"));
+
+            if let Ok(Some(v)) = user_input
+                && v == String::from("delete") 
+                && let Ok(id) = id.parse::<i32>() {
+                wasm_bindgen_futures::spawn_local(async move {
+                    let n_c = n_c.clone();
+                    if let Ok(_) = delete_section(id).await {
+                        n_c.push(&crate::Route::Content);
+                    }
+                });
+            }
+        })
+    };
+
+    let on_sc_edit = {
+        let sl_c = section_list.clone();
+        Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            e.stop_propagation();
+            let sl_c = sl_c.clone();
+            let input = e.target_unchecked_into::<web_sys::HtmlInputElement>();
+            let id = input.id();
+            let id = &id[4..];
+            let window = web_sys::window().expect("no window exists");
+            let user_input = window.prompt_with_message(&t!("edit_c"));
+
+            if let Ok(Some(v)) = user_input 
+                && let Ok(id) = id.parse::<i32>() {
+                wasm_bindgen_futures::spawn_local(async move {
+                    if let Ok(_) = edit_section(id, &v).await {
+                        let mut sl = (*sl_c).clone();
+                        sl.iter_mut().for_each(|s| {
+                            if s.id == (id as i64) {
+                                s.description = Some(v.clone());
+                            }
+                        });
+                        sl_c.set(sl);
+                    }
+                });
+            }
+
+        })
+    };
 
     // Callback for updating allowed_for checkboxes
     let n_c_allowed = new_section_data.clone();
@@ -161,7 +218,7 @@ pub fn SectionList() -> Html {
                     html! {
                         <Link<Route> to={Route::Section { id: section.id }}>
                         <div class={classes!("rounded-2xl","items-center","justify-between","p-4",
-                            "bg-zinc-900/50","border","hover:bg-zinc-700/30","transition-colors", new_posts(section.new_posts))}>
+                            "bg-zinc-900/50","border","hover:bg-zinc-700/30","transition-colors", "relative", new_posts(section.new_posts))}>
                             <p class="font-medium px-2 text-indigo-200">{&section.name}</p>
                             {if let Some(desc) = &section.description {
                                 html! {<p class="py-3 px-2 text-sm text-zinc-400">{desc}</p>}
@@ -169,6 +226,14 @@ pub fn SectionList() -> Html {
                                 html! {<p class="py-3 px-2 text-sm text-zinc-400">{"-"}</p>}
                             }}
                             <p class="text-xs pl-5">{t!("thrs")}{section.threads.unwrap_or_default()}</p>
+                            {if ctx.is_admin() {html! {
+                                <>
+                                    <button class="absolute right-0 top-0 bg-opacity-0 hover:bg-opacity-20" id={format!("del-{}", section.id)} onclick={on_sc_del.clone()}>{"❌"}</button>
+                                    <button class="absolute right-0 top-20 bg-opacity-0 hover:bg-opacity-20" id={format!("edt-{}", section.id)} onclick={on_sc_edit.clone()}>{"❔"}</button>
+                                </>
+                            }}
+                                else { html! {""} }
+                            }
                         </div>
                         </Link<Route>>
                     }

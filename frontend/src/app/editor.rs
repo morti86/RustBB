@@ -5,6 +5,7 @@ use ammonia::clean;
 use pulldown_cmark::{Parser, Options, html::push_html};
 
 use crate::{UserContext, bind::{upload_file_with_fetch}, dto::Resp, forum::{add_post, edit_post}};
+use super::emoji::EmojiPicker;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
@@ -68,6 +69,11 @@ pub fn Editor(props: &Props) -> Html {
         }
     });
 
+    let s_c = props.set_to_load.clone();
+    let on_cancel = Callback::from(move |e: MouseEvent| {
+        s_c.emit(());
+    });
+
     let r_c = raw.clone();
     use_effect_with((), move |_| {
         if let Some(post_id) = post_id {
@@ -96,6 +102,23 @@ pub fn Editor(props: &Props) -> Html {
         text.push_str(&element);
         r_c.set(text);
     });
+
+    let r_c = raw.clone();
+    let insert_video = Callback::from(move |url: String| {
+        let element = format!(" [link]({})", url);
+        let mut text = (*r_c).clone();
+        text.push_str(&element);
+        r_c.set(text);
+    });
+
+    let r_c = raw.clone();
+    let insert_emoji = Callback::from(move |x: String| {
+        let mut text = (*r_c).clone();
+        text.push_str(&x);
+        r_c.set(text);
+    });
+
+    let r_c = raw.clone();
 
     let on_file_upload = {
         //let im_c = image_data.clone();
@@ -127,15 +150,28 @@ pub fn Editor(props: &Props) -> Html {
         })
     };
 
+    let on_vid = {
+        let i_v = insert_video.clone();
+        Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            let window = web_sys::window().expect("no window exists");
+            let user_input = window.prompt_with_message("URL");
+            if let Ok(Some(v)) = user_input {
+                i_v.emit(String::from(v));
+            }
+
+        })
+    };
+
     html! {
         <form id={format!("post-form-{:?}",post_id)} onsubmit={on_submit}>
             <span class="text-red-500">{(*error).clone()}</span>
-            <div class="grid grid-cols-6 space-y-5 space-x-2">
+            <div class="grid grid-cols-8 space-y-5 space-x-2">
                 <textarea 
                     rows="10"
                     required=true
                     maxlength="250"
-                    class="bg-black/0 colspan=10 p-5 border rounded-2xl border-zinc-800 col-span-6"
+                    class="bg-black/0 colspan=10 p-5 border rounded-2xl border-zinc-800 col-span-8"
                     disabled={logged_out}
                     oninput={on_text_input}
                     value={(*raw).clone()}
@@ -146,6 +182,7 @@ pub fn Editor(props: &Props) -> Html {
                     class="px-4 py-2 bg-indigo-800 rounded-xl font-medium hover:bg-violet-600 transition-colors col-span-4"
                     disabled={logged_out}
                     />
+                <button onclick={on_cancel} disabled={post_id.is_none()}>{"C"}</button>
                 <input
                     type="file"
                     id="file_upload"
@@ -153,6 +190,8 @@ pub fn Editor(props: &Props) -> Html {
                     class={classes!["px-4","py-2","rounded-xl","font-medium","hover:bg-violet-600","transition-colors", "col-span-2", "bg-neutral-secondary-medium", "block", "bg-rose-800"]}
                     onchange={on_file_upload}
                     />
+                <button class="bg-rose-800 hover:bg-rose-600" onclick={on_vid.clone()}>{"🌐"}</button>
+                <EmojiPicker pick_emoji={insert_emoji} class="col-span-4"/>
             </div>
         </form>
     }

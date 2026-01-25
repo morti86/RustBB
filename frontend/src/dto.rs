@@ -332,7 +332,7 @@ pub struct CreateSectionDto {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct DeleteSectionDto {
-    s_id: i64,
+    pub s_id: i32,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -465,5 +465,11 @@ impl From<JsValue> for GetReactionsDto {
         from_value(value)
             .unwrap_throw()
     }
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct UpdateSectionDto {
+    pub id: i32,
+    pub description: String,
 }
 

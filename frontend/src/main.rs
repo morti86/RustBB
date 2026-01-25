@@ -153,12 +153,10 @@ fn App() -> Html {
             let m = me().await;
             match m {
                 Ok(user) => {
-                    c_log!("User: {}", user.name);
                     c_c.dispatch(Some(user));
 
                 }
-                Err(e) => {
-                    c_error!("{:?}",e);
+                Err(_e) => {
                     c_c.dispatch(None);
                 }
             }

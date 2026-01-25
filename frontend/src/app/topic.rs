@@ -5,7 +5,7 @@ use web_sys::Element;
 use yew::prelude::*;
 use wasm_bindgen::UnwrapThrowExt;
 use yew_router::hooks::use_navigator;
-use crate::{app::reaction::Reaction, dto::{Post, Thread, UserData}, forum::{delete_post, edit_thread, get_thread, new_thread}};
+use crate::{app::reaction::Reaction, dto::{Post, Thread, UserData}, forum::{delete_post, delete_thread, edit_thread, get_thread, new_thread}};
 use super::user::User;
 use super::editor::Editor;
 use wasm_bindgen::JsCast;
@@ -117,25 +117,53 @@ pub fn Topic(props: &Props) -> Html {
             e_c.set(None);
         });
 
+        let on_del_th = {
+            let n_c = navigator.clone();
+            Callback::from(move |_e: MouseEvent| {
+                let window = web_sys::window().expect("no window exists");
+                let user_input = window.prompt_with_message(&t!("del_c"));
+
+                if let Ok(Some(v)) = user_input
+                    && v == String::from("delete") {
+
+                    let n_c = n_c.clone();
+                    wasm_bindgen_futures::spawn_local(async move {
+                        if let Ok(_) = delete_thread(id).await {
+                            n_c.push(&crate::Route::Content);
+                        }
+                    });
+
+                }
+            })
+        };
+
+
        
         let l_c = loaded.clone();
         let on_click_d = Callback::from(move |e: MouseEvent| {
             e.prevent_default();
             if let Some(target) = e.target() {
-                let elem: web_sys::Element = target.dyn_into().unwrap();
-                let id = elem.id();
-                    if id.starts_with("delete-") {
-                    let post_id: i64 = (&id[7..]).parse()
-                        .expect(&format!("failed to parse: {}", id));
+                let window = web_sys::window().expect("no window exists");
+                let user_input = window.prompt_with_message(&t!("del_c"));
 
-                    let l_c = l_c.clone();
-                    wasm_bindgen_futures::spawn_local(async move {
-                        if let Err(e) = delete_post(post_id).await {
-                            crate::c_error!("Failed to delete post: {:?}", e);
-                        }
-                        l_c.set(false);
-                    });
+                if let Ok(Some(v)) = user_input
+                    && v == String::from("delete") {
 
+                    let elem: web_sys::Element = target.dyn_into().unwrap();
+                    let id = elem.id();
+                        if id.starts_with("delete-") {
+                        let post_id: i64 = (&id[7..]).parse()
+                            .expect(&format!("failed to parse: {}", id));
+
+                        let l_c = l_c.clone();
+                        wasm_bindgen_futures::spawn_local(async move {
+                            if let Err(e) = delete_post(post_id).await {
+                                crate::c_error!("Failed to delete post: {:?}", e);
+                            }
+                            l_c.set(false);
+                        });
+
+                    }
                 }
             }
         });
@@ -154,6 +182,12 @@ pub fn Topic(props: &Props) -> Html {
                     l_c.set(false);
                 }
             }
+        });
+
+        let e_c = editing.clone();
+        let on_click_cc = Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            e_c.set(None);
         });
 
         let m_c = meta.clone();
@@ -196,10 +230,14 @@ pub fn Topic(props: &Props) -> Html {
                     <div>
                         <User user_id={meta.author.clone()} user_cache={user_cache.clone()}/>
                     </div>
-                    <div class="col-span-5 grid grid-cols-1">
+                    <div class="col-span-5 grid grid-cols-1 relative">
                         <span class="text-xl text-cyan-200">{&meta.title}</span>
                         <span class="text-zinc-400" id="thread-meta-content">/* HTML */</span>
                         {if ctx.is_some() { html! {<Reaction post={None} thread={meta.id}/>} } else { html! {""} } }
+                        {if ctx.is_admin() || ctx.is_mod() {
+                            html! { <button class="absolute right-0 top-0 bg-opacity-0 hover-bg-pink-900/50" onclick={on_del_th}>{"❌"}</button> }
+                        } else { html!{} }
+                        }
                     </div>
                     {if ctx.is_mod() || ctx.is_admin() || ctx.id() == meta.author {
                         html! { {""} }

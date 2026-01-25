@@ -59,6 +59,7 @@ pub fn Section(props: &Props) -> Html {
         });
     });
 
+
     html! {
         <div>
             {if ctx.is_none() {html!{""}} else { html! {<Link<crate::Route> to={crate::Route::Topic { id: 0, s_id: section_id }}>{t!("new_t")}</Link<crate::Route>> } } }
@@ -93,6 +94,7 @@ pub fn Section(props: &Props) -> Html {
                                             <div class="grid grid-cols-2 gap-1">
                                                 <span class="text-xs mb-1">{&topic.author_name}</span>
                                                 <span class="text-l font-bold">{&topic.title}</span>
+
                                                 <span class="text-xs text-red-500">{if topic.locked {t!("lockd")} else {t!("void")}}</span>
                                                 <span class="text-xs text-emerald-500">{&topic.created_at.format(crate::DATEFORMAT).to_string()}</span>
                                             </div>

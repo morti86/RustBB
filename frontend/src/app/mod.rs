@@ -15,3 +15,4 @@ mod lang_picker;
 mod reaction;
 mod post;
 mod outbox;
+mod emoji;

@@ -24,11 +24,22 @@ pub fn forum_handler() -> Router<AppState> {
             .layer(admin_only.clone())
             .layer(from_fn(auth))
             )
+        .route("/section/del", delete(delete_section)
+            .layer(admin_only.clone())
+            .layer(from_fn(auth))
+            )
+        .route("/section/edit", post(edit_section)
+            .layer(admin_only.clone())
+            .layer(from_fn(auth))
+            )
         .route("/threads/new", post(create_thread)
             .layer(from_fn(is_banned))
             .layer(from_fn(auth)) 
             )
-        .route("/threads", delete(delete_thread).layer(admin_mod_only.clone()) )
+        .route("/threads", delete(delete_thread)
+            .layer(admin_mod_only.clone()) 
+            .layer(from_fn(auth))
+            )
         .route("/threads", put(update_thread)
             .layer(from_fn(auth))
             )
@@ -88,6 +99,61 @@ pub async fn create_thread(Extension(app_state): Extension<Arc<AppState>>,
     Ok(Json(response))
 
 }
+
+pub async fn delete_section(
+    Extension(app_state): Extension<Arc<AppState>>,
+    Extension(user): Extension<JWTAuthMiddeware>,
+    Json(body): Json<forum::DeleteSectionDto>,
+    ) -> ForumResult<impl IntoResponse> {
+    body.validate()?; 
+
+    let user_id = user.user.id;
+    app_state.update_session(&user_id)?;
+    app_state.db_client.update_user_activity(user_id).await?;
+
+    let (a,_) = tokio::join!(
+        app_state.db_client.delete_section(body.s_id),
+        app_state.cache.invalidate("sections")
+    );
+
+    a?;
+
+    let response = forum::Response {
+        status: "success",
+        message: "thread deleted".to_string(),
+    };
+
+    Ok(Json(response))
+
+}
+
+pub async fn edit_section(
+    Extension(app_state): Extension<Arc<AppState>>,
+    Extension(user): Extension<JWTAuthMiddeware>,
+    Json(body): Json<forum::UpdateSectionDto>,
+    ) -> ForumResult<impl IntoResponse> {
+    body.validate()?; 
+
+    let user_id = user.user.id;
+    app_state.update_session(&user_id)?;
+    app_state.db_client.update_user_activity(user_id).await?;
+
+    let (a,_) = tokio::join!(
+        app_state.db_client.update_section(body.id, &body.description),
+        app_state.cache.invalidate("sections")
+    );
+
+    a?;
+
+    let response = forum::Response {
+        status: "success",
+        message: "thread edited".to_string(),
+    };
+
+    Ok(Json(response))
+
+}
+
 
 pub async fn delete_thread(Extension(app_state): Extension<Arc<AppState>>,
     Extension(user): Extension<JWTAuthMiddeware>,
@@ -210,7 +276,11 @@ pub async fn add_section(
     Json(body): Json<forum::CreateSectionDto>,
 ) -> ForumResult<impl IntoResponse> {
     
-    app_state.db_client.create_section(&body.name, &body.description, &body.allowed_for).await?;
+    let (a,_) = tokio::join!(
+        app_state.db_client.create_section(&body.name, &body.description, &body.allowed_for),
+        app_state.cache.invalidate("sections"));
+
+    a?;
 
     let r = Response {
         status: "success",

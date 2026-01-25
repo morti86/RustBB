@@ -22,6 +22,8 @@ yew-router = "0.19.0"
 infer = "0.19.0"
 casey = "0.4.2"
 rust-i18n = "3.1.5"
+regex = "1.12.2"
+emojis = { version = "0.8.0", features = ["serde"] }
 
 [package.metadata.i18n]
 available-locales = ["en", "pl"]

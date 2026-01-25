@@ -4,6 +4,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{File, FileReader, FormData, Headers, HtmlElement, Request, RequestInit, Response};
 use crate::{ADDR, dto::ImageUploadResponse};
+use regex::Regex;
 
 #[wasm_bindgen]
 extern "C" {
@@ -437,4 +438,20 @@ macro_rules! make_enum {
             }
         }
     };
+}
+
+
+pub fn extract_and_validate_youtube_url(input: &str) -> Option<String> {
+    // Regex to extract the URL from markdown-like syntax
+
+    // Regex to validate YouTube URL
+    let youtube_re = Regex::new(
+        r#"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})"#
+    ).unwrap();
+
+    if youtube_re.is_match(input) {
+        Some(input.to_string())
+    } else {
+        None
+    }
 }

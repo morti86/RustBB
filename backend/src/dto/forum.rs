@@ -51,9 +51,15 @@ pub struct CreateSectionDto {
 }
 
 #[derive(Validate, Debug, Default, Clone, Serialize, Deserialize)]
+pub struct UpdateSectionDto {
+    pub id: i32,
+    pub description: String,
+}
+
+#[derive(Validate, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct DeleteSectionDto {
     #[validate(range(min=0))]
-    s_id: i64,
+    pub s_id: i32,
 }
 
 #[derive(Validate, Debug, Default, Clone, Serialize, Deserialize)]

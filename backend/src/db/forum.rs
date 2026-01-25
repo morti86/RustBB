@@ -13,6 +13,7 @@ pub trait ForumExt {
     async fn create_section(&self, name: &str, description: &str, allowed_for: &[UserRole]) -> ForumResult<()>;
     async fn get_sections(&self, user: Option<Uuid>) -> ForumResult<Vec<Section>>;
     async fn delete_section(&self, s_id: i32) -> ForumResult<()>;
+    async fn update_section(&self, s_id: i32, desc: &str) -> ForumResult<()>;
 
     async fn get_chat(&self, limit: usize) -> ForumResult<Vec<ChatPost>>;
     async fn post_chat(&self, u_id: Uuid, content: &str) -> ForumResult<()>;
@@ -56,6 +57,11 @@ impl ForumExt for crate::db::DBClient {
     }
 
     async fn delete_thread(&self, thread_id: i64) -> ForumResult<()> {
+        sqlx::query!(r#"DELETE FROM forum.posts WHERE topic = $1"#, thread_id as i32)
+            .execute(&self.pool)
+            .await?;
+
+
         sqlx::query!(r#"DELETE FROM forum.threads WHERE id = $1"#, thread_id as i32)
             .execute(&self.pool)
             .await?;
@@ -80,7 +86,7 @@ impl ForumExt for crate::db::DBClient {
             WHERE id = $1
             "#,
             thread_id as i32, locked)
-            .fetch_one(&self.pool)
+            .execute(&self.pool)
             .await?;
         Ok(())
     }
@@ -107,6 +113,18 @@ impl ForumExt for crate::db::DBClient {
                 .map_err(|e| e)
         });
 
+        Ok(())
+    }
+
+    async fn update_section(&self, s_id: i32, desc: &str) -> ForumResult<()> {
+       sqlx::query!(
+            r#"UPDATE forum.sections
+            SET description = $2
+            WHERE id = $1
+            "#,
+            s_id as i32, desc)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
@@ -157,8 +175,8 @@ impl ForumExt for crate::db::DBClient {
 
     async fn delete_section(&self, s_id: i32) -> ForumResult<()> {
         sqlx::query!(
-            r#"DELETE FROM forum.sections
-               WHERE id = $1"#, s_id)
+            r#"DELETE FROM forum.sections s
+               WHERE s.id = $1"#, s_id)
             .execute(&self.pool)
             .await?;
 
