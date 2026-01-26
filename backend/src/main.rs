@@ -40,6 +40,7 @@ mod oauth;
 
 type TryResult<'a> = dashmap::try_result::TryResult<dashmap::mapref::one::RefMut<'a, Uuid, UserSession>>;
 type SharedCache = Arc<Cache<String, serde_json::Value>>;
+type ImageCache = Arc<Cache<String, Vec<u8>>>;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
@@ -48,6 +49,7 @@ pub struct AppState {
     pub db_client: DBClient,
     pub key: Key,
     pub cache: SharedCache,
+    pub image_cache: ImageCache,
     pub active_users: Arc<DashMap<Uuid, UserSession>>,
 }
 
@@ -166,6 +168,13 @@ async fn main() -> Result<()> {
             .build()
     );
 
+    let image_cache: ImageCache = Arc::new(
+        Cache::builder()
+            .max_capacity(100)
+            .time_to_live(std::time::Duration::from_secs(3600))
+            .build()
+    );
+
     let cors = CorsLayer::new()
         .allow_origin(AllowOrigin::mirror_request())
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE])
@@ -176,6 +185,7 @@ async fn main() -> Result<()> {
     let app_state = AppState {
         oauth_service: OAuthService::from_env(),
         env: config.clone(),
+        image_cache,
         cache,
         db_client,
         key: Key::generate(),

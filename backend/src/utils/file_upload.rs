@@ -1,14 +1,16 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use axum::extract::Path;
 use axum::response::IntoResponse;
-use axum::Json;
+use axum::{Extension, Json};
 use uuid::Uuid;
 use axum::{
     extract::Multipart,
 };
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
+use crate::AppState;
 use crate::error::{ForumError, ForumResult};
 use crate::config::Config;
 
@@ -109,23 +111,35 @@ pub fn get_avatar_url(config: &Config, filename: &str) -> String {
     format!("{}/uploads/{}", config.host_url, filename)
 }
 
-pub async fn serve_avatar(Path(image_id): Path<String>) -> ForumResult<impl IntoResponse> {
+pub async fn serve_avatar(
+    Path(image_id): Path<String>,
+    Extension(app_state): Extension<Arc<AppState>>) -> ForumResult<impl IntoResponse> {
     let upload_path = env!("UPLOAD_DIR");
 
     let file_path: PathBuf = [upload_path, &image_id].iter().collect();
 
     if !file_path.exists() {
         let default_path = format!("{}/default.png", upload_path);
-        let default = fs::read(default_path.as_str())
-            .await?;
+        let default = match app_state.image_cache.get(default_path.as_str()).await {
+            Some(c) => c,
+            None => fs::read(default_path.as_str()).await?,
+        };
         let body = axum::body::Body::from(default);
         let response = axum::http::Response::builder()
             .header("Content-Type", "image/png") // adjust based on format
             .body(body)?;
         Ok(response.into_response())
     } else {
-        let contents = fs::read(&file_path)
-            .await?;
+        let fp = file_path.display().to_string();
+        let contents = app_state.image_cache.get(fp.as_str()).await;
+        let contents = match contents {
+            Some(c) => c,
+            None => {
+                let data = fs::read(file_path).await?;
+                app_state.image_cache.insert(fp, data.clone()).await;
+                data
+            }
+        };
 
         let mime_type = if let Some(kind) = infer::get(&contents) {
             kind.mime_type()
