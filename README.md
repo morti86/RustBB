@@ -2,14 +2,14 @@
 A PhpBB-like discussion forum written in Rust
 Still a WIP
 
-### backend: 90% done
+### backend: 98% done
 - Axum
 - Tokio
 - Oauth2
 - JWT
 - Sqlx (PostgreSQL)
 
-### frontend: 60% done
+### frontend: 90% done
 - Yew
 - Web-Sys
 - WASM Bindgen
